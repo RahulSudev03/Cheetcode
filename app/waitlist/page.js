@@ -43,20 +43,52 @@ export default function Waitlist() {
   };
 
   return (
-    <Box>
-      <ResponsiveAppBar />
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
+    <Box minHeight="100vh">
+      <Box bgcolor="white">
+        <ResponsiveAppBar />
+      </Box>
+      <Container maxWidth="md" sx={{ mt: 8 }}>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          sx={{
+            textAlign: 'center',
+            mb: 4,
+          }}
+        >
+          <Typography
+            fontSize={{ xs: '6vw', sm: '4vw', md: '2vw' }}
+            fontFamily="monospace"
+            letterSpacing=".3rem"
+            //color="white"
+            mb={2}
+          >
+            What is Cheetcode?
+          </Typography>
+          <Typography
+            variant="h6"
+            fontSize={{ xs: '4vw', sm: '2.5vw', md: '1vw' }}
+            fontFamily="monospace"
+            //color="white"
+          >
+            An affordable, beginner-friendly mock interview preparation platform that empowers users to strengthen their problem-solving skills through tailored practice 
+            and real-time AI-driven feedback...
+          </Typography>
+        </Box>
+        
         <Box
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 3, md: 4 },
             bgcolor: 'background.paper',
             borderRadius: 1,
             boxShadow: 3,
             textAlign: 'center',
+            
           }}
         >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Join Our Waitlist
+          <Typography variant="h4" component="h1" fontFamily="monospace" color="black" gutterBottom>
+            Join Our Waitlist Here
           </Typography>
           <form onSubmit={handleSubmit}>
             <TextField
