@@ -61,7 +61,7 @@ function ResponsiveAppBar() {
       <AppBar
         position="static"
         sx={{
-          backgroundColor: theme.palette.mode === 'dark' ? '#360000' : '#6f0000',
+          backgroundColor: theme.palette.mode === 'dark' ? '#001143' : '#0832ab',
         }}
       >
         <Container maxWidth="xl">
