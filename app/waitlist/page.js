@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
 import ReCAPTCHA from 'react-google-recaptcha';
 import ResponsiveAppBar from '../utils/ResponsiveAppBar';
+import ToggleDarkMode from '../utils/ToggleDarkMode';
 
 export default function Waitlist() {
   const [email, setEmail] = useState('');
@@ -126,5 +127,6 @@ export default function Waitlist() {
         </Box>
       </Container>
     </Box>
+    
   );
 }

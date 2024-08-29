@@ -17,7 +17,7 @@ export const sendConfirmationEmail = async (userEmail) => {
     to: userEmail, // list of receivers
     subject: "Waitlist Confirmation", // Subject line
     text: "Waitlist confirmation", // plain text body
-    html: "Thank you for joining our waitlist!", // html body
+    html: "Thank you for joining our waitlist! We're excited to have you on board and appreciate your interest in Cheetcode.<br/> You're on the list, and we appreciate your patience as we make it the best it can be. <br /><br /> Thanks again for your interest in Cheetcode. We can't wait for you to try it out! ", // html body
   };
 
   await transporter.sendMail(mailOptions);

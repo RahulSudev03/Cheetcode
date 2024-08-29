@@ -18,7 +18,7 @@ import { useTheme, ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Link from 'next/link'; 
 
-const pages = ['Home', 'Roadmap', 'Waitlist'];
+const pages = ['Practice', 'Roadmap', 'Interview', 'Waitlist'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function ResponsiveAppBar() {
@@ -61,7 +61,7 @@ function ResponsiveAppBar() {
       <AppBar
         position="static"
         sx={{
-          backgroundColor: theme.palette.mode === 'dark' ? '#001143' : '#0832ab',
+          backgroundColor: theme.palette.mode === 'dark' ? '#000b2a' : '#001143',
         }}
       >
         <Container maxWidth="xl">
@@ -112,6 +112,7 @@ function ResponsiveAppBar() {
                 onClose={handleCloseNavMenu}
                 sx={{
                   display: { xs: 'block', md: 'none' },
+                  justifyContent: 'center'
                 }}
               >
                 {pages.map((page) => (
@@ -194,3 +195,4 @@ function ResponsiveAppBar() {
 }
 
 export default ResponsiveAppBar;
+
