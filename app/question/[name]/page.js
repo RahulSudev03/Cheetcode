@@ -1,106 +1,50 @@
-'use client'
-import Link from 'next/link';
+'use client';
 import { useState, useEffect } from 'react';
-import { TextField, Button, Box, Typography, Select, MenuItem, IconButton } from '@mui/material';
+import { useParams } from 'next/navigation';
+import { Box, Typography } from '@mui/material';
 
-export default function UploadQuestion() {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
-  const [questions, setQuestions] = useState([]);
+export default function QuestionPage() {
+  const [question, setQuestion] = useState(null);
+  const [error, setError] = useState(null);
+  const { name } = useParams();  // Get the dynamic route parameter
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetch('/api/uploadQuestion', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+    if (!name) return;
 
+    const fetchQuestion = async () => {
+      try {
+        const response = await fetch(`/api/uploadQuestion?name=${name}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch questions');
+          throw new Error(`Failed to fetch question: ${response.statusText}`);
         }
 
         const data = await response.json();
-        setQuestions(data.data);
+        setQuestion(data.question);
       } catch (error) {
-        console.error('Error fetching questions:', error);
+        setError(error.message);
+        console.error('Error fetching question:', error);
       }
     };
 
-    fetchQuestions();
-  }, []);
+    fetchQuestion();
+  }, [name]);
 
-  const handleTestCaseChange = (index, key, value) => {
-    const newTestCases = [...testCases];
-    newTestCases[index][key] = value;
-    setTestCases(newTestCases);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch('/api/uploadQuestion', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          difficulty,
-          testCase: testCases,
-        }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Error: ${response.status} - ${text}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      setName('');
-      setDescription('');
-      setDifficulty('');
-      setTestCases([{ input: '', output: '' }]);
-      fetchQuestions();
-
-    } catch (error) {
-      console.error('Failed to submit question:', error);
-    }
-  };
+  if (error) return <p>Error: {error}</p>;
+  if (!question) return <p>Loading...</p>;
 
   return (
-    <Box sx={{ maxWidth: 600, margin: 'auto', padding: 2 }}>
-      <Box>
-        {questions.map((question) => (
-          <Box key={question._id} sx={{ marginBottom: 2, padding: 2, border: '1px solid #ddd' }}>
-            <Link href={`/question/${question.name.toLowerCase().replace(/\s+/g, '-')}`}>
-              <Typography variant="h6" component="a" sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}>
-                {question.name}
-              </Typography>
-            </Link>
-            <Typography variant="body1">{question.description}</Typography>
-            <Typography variant="body2">Difficulty: {question.difficulty}</Typography>
-            <Typography variant="body2">Test Cases:</Typography>
-            <ul>
-              {question.testCase.map((testCase, idx) => (
-                <li key={idx}>
-                  <strong>Input:</strong> {testCase.input}, <strong>Output:</strong> {testCase.output}
-                </li>
-              ))}
-            </ul>
-          </Box>
+    <Box sx={{ maxWidth: 800, margin: 'auto', padding: 2 }}>
+      <Typography variant="h4" gutterBottom>{question.name}</Typography>
+      <Typography variant="body1" gutterBottom>{question.description}</Typography>
+      <Typography variant="body2" gutterBottom>Difficulty: {question.difficulty}</Typography>
+      <Typography variant="h6" gutterBottom>Test Cases:</Typography>
+      <ul>
+        {question.testCase.map((testCase, idx) => (
+          <li key={idx}>
+            <strong>Input:</strong> {testCase.input}, <strong>Output:</strong> {testCase.output}
+          </li>
         ))}
-      </Box>
+      </ul>
     </Box>
   );
 }
-
-

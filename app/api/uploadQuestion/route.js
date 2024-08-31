@@ -10,16 +10,23 @@ export async function GET(req) {
 
   try {
     if (name) {
-      // Fetch a specific question by name
-      const question = await Question.findOne({ name: name.replace(/-/g, ' ') });
+      // Convert the URL-friendly name to the format used in the database
+      const formattedName = name.replace(/-/g, ' ');
+      console.log(`Received name: ${name}`);
+      console.log(`Formatted name: ${formattedName}`);
+
+      // Use a case-insensitive regular expression to find the question
+      const question = await Question.findOne({ name: new RegExp(`^${formattedName}$`, 'i') });
 
       if (!question) {
+        console.log('Question not found');
         return NextResponse.json({ success: false, error: 'Question not found' }, { status: 404 });
       }
 
+      console.log('Question found:', question);
       return NextResponse.json({ success: true, question }, { status: 200 });
     } else {
-      // Fetch all questions
+      console.log('No name provided');
       const questions = await Question.find({});
       return NextResponse.json({ success: true, data: questions }, { status: 200 });
     }
@@ -28,6 +35,7 @@ export async function GET(req) {
     return NextResponse.json({ success: false, error: 'Failed to fetch questions' }, { status: 500 });
   }
 }
+
 
 export async function POST(req) {
   await dbConnect();
