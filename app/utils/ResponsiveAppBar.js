@@ -24,7 +24,7 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [mode, setMode] = React.useState('light');
+  const [mode, setMode] = React.useState('dark');
 
   const theme = React.useMemo(
     () =>
@@ -52,7 +52,7 @@ function ResponsiveAppBar() {
   };
 
   const toggleColorMode = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    setMode((prevMode) => (prevMode === 'dark' ? 'light' : 'dark'));
   };
 
   return (
