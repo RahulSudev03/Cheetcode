@@ -26,7 +26,6 @@ export default function Main() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  // Animation variants for Features section
   const featureVariants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.5, type: 'spring', stiffness: 300 } },
@@ -149,8 +148,8 @@ export default function Main() {
               </Typography>
             </Grid>
 
-            {/* Feature Item */}
-            <Grid container spacing={4} justifyContent="center" sx={{ maxWidth: '1200px', mx: 'auto' }}>
+            {/* Feature Items */}
+            <Grid container spacing={4} justifyContent="center">
               {/* AI Assistance Feature */}
               <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
                 <motion.div
@@ -158,7 +157,7 @@ export default function Main() {
                   whileInView="visible"
                   variants={featureVariants}
                 >
-                  <Box sx={{ p: 4, border: '1px solid #61dafb', borderRadius: '12px', backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
+                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
                     {/* <img src="your-icon-url-here" alt="AI Assistance Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
                     <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>AI Assistance</Typography>
                     <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
@@ -177,7 +176,7 @@ export default function Main() {
                   whileInView="visible"
                   variants={featureVariants}
                 >
-                  <Box sx={{ p: 4, border: '1px solid #61dafb', borderRadius: '12px', backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
+                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
                     {/* <img src="your-icon-url-here" alt="User Progress Tracking Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
                     <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>User Progress Tracking</Typography>
                     <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
@@ -195,7 +194,7 @@ export default function Main() {
                   whileInView="visible"
                   variants={featureVariants}
                 >
-                  <Box sx={{ p: 4, border: '1px solid #61dafb', borderRadius: '12px', backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
+                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
                     {/* <img src="your-icon-url-here" alt="Practice Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
                     <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>Practice</Typography>
                     <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
