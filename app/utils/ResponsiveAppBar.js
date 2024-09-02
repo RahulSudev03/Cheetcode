@@ -66,7 +66,11 @@ function ResponsiveAppBar() {
       >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+            <img 
+              src="/images/cheetcode_logo.png" 
+              alt="Cheetcode Logo" 
+              style={{ display: { xs: 'none', md: 'flex' }, marginRight: '1rem', width: '40px', height: '40px' }} 
+            />            
             <Typography
               variant="h6"
               noWrap
