@@ -45,14 +45,14 @@ export default function QuestionPage() {
           language_id: 63,  // For example, 63 is Python 3, you can change this based on language
         }),
       });
-  
+
       const data = await response.json();
       setOutput(data.stdout || data.stderr);
     } catch (error) {
       setOutput('Error running code: ' + error.message);
     }
   };
-  
+
 
   if (error) return <p>Error: {error}</p>;
   if (!question) return <p>Loading...</p>;
