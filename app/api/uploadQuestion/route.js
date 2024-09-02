@@ -40,9 +40,9 @@ export async function GET(req) {
 export async function POST(req) {
   await dbConnect();
 
-  const { name, description, difficulty, testCase } = await req.json();
+  const { name, description, difficulty, algorithm, testCase } = await req.json();
 
-  if (!name || !description || !difficulty || !testCase) {
+  if (!name || !description || !difficulty || !algorithm || !testCase) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
   }
 
@@ -52,6 +52,7 @@ export async function POST(req) {
       name,
       description,
       difficulty,
+      algorithm,
       testCase,
     });
 
