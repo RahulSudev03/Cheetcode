@@ -71,6 +71,9 @@ export default function QuestionPage() {
       <Typography variant="body2" gutterBottom>
         Difficulty: {question.difficulty}
       </Typography>
+      <Typography variant="body2" gutterBottom>
+        Algorithm: {question.algorithm}
+      </Typography>
       <Typography variant="h6" gutterBottom>
         Test Cases:
       </Typography>
