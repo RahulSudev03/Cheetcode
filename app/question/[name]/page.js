@@ -1,16 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Box, Typography, Button } from "@mui/material";
-import Editor, { DiffEditor, useMonaco, loader } from "@monaco-editor/react";
+import { Box, Typography, Button, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import Editor from "@monaco-editor/react";
 
 export default function QuestionPage() {
   const [question, setQuestion] = useState(null);
   const [error, setError] = useState(null);
-  const [code, setCode] = useState('// Write your code here...');  // <-- Ensure this line is included
+  const [code, setCode] = useState('// Write your code here...');  
   const [output, setOutput] = useState('');
-  const { name } = useParams(); // Get the dynamic route parameter
-
+  const [language, setLanguage] = useState('javascript');  // Default language
+  const { name } = useParams(); 
+  const languages = [
+      { label: 'JavaScript', value: 'javascript' },
+      { label: 'Python', value: 'python' },
+      { label: 'Java', value: 'java' },
+      { label: 'C++', value: 'c++' },
+      { label: 'Ruby', value: 'ruby' },
+  ];
   useEffect(() => {
     if (!name) return;
 
@@ -31,23 +38,22 @@ export default function QuestionPage() {
 
     fetchQuestion();
   }, [name]);
+
   const runCode = async () => {
     try {
-      const response = await fetch('https://api.judge0.com/submissions?wait=true', {
+      const response = await fetch('/api/runCode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-rapidapi-key': 'YOUR_RAPIDAPI_KEY',
-          'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
         },
         body: JSON.stringify({
-          source_code: code,
-          language_id: 63,  // For example, 63 is Python 3, you can change this based on language
+          code,
+          language,
         }),
       });
 
       const data = await response.json();
-      setOutput(data.stdout || data.stderr);
+      setOutput(data.output);
     } catch (error) {
       setOutput('Error running code: ' + error.message);
     }
@@ -56,9 +62,6 @@ export default function QuestionPage() {
 
   if (error) return <p>Error: {error}</p>;
   if (!question) return <p>Loading...</p>;
-  function handleEditorChange(value, event) {
-    console.log('here is the current model value:', value);
-  }
 
   return (
     <Box sx={{ maxWidth: 800, margin: "auto", padding: 2 }}>
@@ -85,11 +88,29 @@ export default function QuestionPage() {
           </li>
         ))}
       </ul>
+
+      <Typography variant="h6" gutterBottom>Language:</Typography>
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <InputLabel id="language-select-label">Language</InputLabel>
+        <Select
+          labelId="language-select-label"
+          value={language}
+          label="Language"
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          {languages.map((lang) => (
+            <MenuItem key={lang.value} value={lang.value}>
+              {lang.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <Typography variant="h6" gutterBottom>Code Editor:</Typography>
       <Box sx={{ marginBottom: 2 }}>
         <Editor
           height="400px"
-          defaultLanguage="javascript"
+          defaultLanguage={language}
           defaultValue="// Write your code here..."
           value={code}
           onChange={(value) => setCode(value)}
@@ -99,7 +120,7 @@ export default function QuestionPage() {
       <Button variant="contained" color="primary" onClick={runCode}>Run Code</Button>
 
       {output && (
-        <Box sx={{ marginTop: 2 }}>
+        <Box sx={{ mt: 2 }}>
           <Typography variant="h6" gutterBottom>Output:</Typography>
           <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{output}</Typography>
         </Box>
