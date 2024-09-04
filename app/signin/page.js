@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from 'js-cookie';
-import styles from "./signIn.module.css";
+import styles from './signin.module.css';
 
 export default function Signin() {
   const [username, setUsername] = useState('');

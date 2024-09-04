@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./Signup.module.css";
+import styles from "./signup.module.css";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ export default function Signup() {
   });
 
   const router = useRouter(); 
-
+  
   useEffect(() => {
     // Apply body CSS when component mounts
     document.body.style.backgroundImage = "url('/images/binary_rain.png')";
