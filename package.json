@@ -20,7 +20,7 @@
     "mongoose": "^8.5.2",
     "next": "14.2.5",
     "nodemailer": "^6.9.14",
-    "openai": "^4.57.1",
+    "openai": "^4.57.2",
     "piston-client": "^1.0.2",
     "prismjs": "^1.29.0",
     "react": "^18",
