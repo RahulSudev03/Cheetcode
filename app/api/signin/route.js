@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import dbConnect from '@/app/utils/mongoDB';
+import dbConnect from '@/app/utils/dbConnect';
 import user from '@/app/models/User';
 
 export async function POST(req) {
@@ -14,7 +14,7 @@ export async function POST(req) {
 
     if (!foundUser) {
       return new Response(
-        JSON.stringify({ message: 'User not found' }),
+        JSON.stringify({ message: 'Invalid username or password' }),
         { status: 404 }
       );
     }
@@ -24,14 +24,14 @@ export async function POST(req) {
 
     if (!isPasswordValid) {
       return new Response(
-        JSON.stringify({ message: 'Invalid password' }),
+        JSON.stringify({ message: 'Invalid username or password' }),
         { status: 401 }
       );
     }
 
     // If credentials are valid, return a success response
     return new Response(
-      JSON.stringify({ message: 'Sign in successful', user: { username: foundUser.username, email: foundUser.email } }),
+      JSON.stringify({ user: { username: foundUser.username, email: foundUser.email } }),
       { status: 200 }
     );
 

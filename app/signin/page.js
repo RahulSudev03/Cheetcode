@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import styles from "./signIn.module.css"; // Import CSS module
+import { useRouter } from "next/navigation";
+import Cookies from 'js-cookie';
+import styles from "./signIn.module.css";
 
 export default function Signin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
-  // Use useEffect to apply styles to the body element when the component mounts
   useEffect(() => {
     document.body.style.background = "url('/images/binary_rain.png') no-repeat center center fixed";
     document.body.style.backgroundSize = "cover";
@@ -26,16 +28,19 @@ export default function Signin() {
       const response = await fetch('/api/signin', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       const result = await response.json();
+
       if (response.ok) {
-        setMessage(result.message); // Display success message
+        Cookies.set('token', result.token, { expires: 3 });
+        setMessage(result.message);
+        router.push('/');
       } else {
-        setMessage(result.message); // Display error message
+        setMessage(result.message);
       }
     } catch (error) {
       console.error('Error during sign in:', error);
@@ -76,7 +81,7 @@ export default function Signin() {
           <p>Don't have an account? <a href="/signup">Sign Up</a></p>
           <p>or you can sign in with</p>
           <div className={styles.socialLogin}>
-          <a href="#" aria-label="Sign in with Google">
+            <a href="#" aria-label="Sign in with Google">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="30px" height="30px">
                 <path fill="#4285F4" d="M45.09 24.67c0-1.45-.12-2.84-.35-4.2H24v8.4h11.88c-.51 2.79-2.04 5.15-4.35 6.75v5.6h7.03c4.11-3.78 6.53-9.35 6.53-16.55z"></path>
                 <path fill="#34A853" d="M24 48c5.9 0 10.84-1.96 14.45-5.33l-7.03-5.6c-1.95 1.31-4.44 2.1-7.42 2.1-5.7 0-10.51-3.86-12.24-9.06H3.58v5.71C7.16 43.8 14.83 48 24 48z"></path>

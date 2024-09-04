@@ -1,5 +1,7 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./Signup.module.css";
 
 export default function Signup() {
@@ -9,6 +11,8 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
   });
+
+  const router = useRouter(); 
 
   useEffect(() => {
     // Apply body CSS when component mounts
@@ -55,6 +59,7 @@ export default function Signup() {
       const result = await response.json();
       if (response.ok) {
         alert(result.message); // Success message
+        router.push('/signin');
       } else {
         alert(result.message); // Error message
       }
