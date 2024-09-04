@@ -17,7 +17,7 @@ export default function Footer() {
       }}
       component="footer"
     >
-      <Container maxWidth="sm" marginTop={4}>
+      <Container maxWidth="sm" mt={4}>
         <Typography variant="body2" color="inherit" align="center"> {/* Use 'inherit' to match text color */}
           {"Copyright © "}
           <Link color="inherit" href="https://cheetcode.dev/">
