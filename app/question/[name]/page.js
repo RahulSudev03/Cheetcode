@@ -11,8 +11,9 @@ import {
   InputLabel,
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
+import withAuth from "@/app/utils/hoc/withAuth";
 
-export default function QuestionPage() {
+function QuestionPage() {
   const [question, setQuestion] = useState(null);
   const [error, setError] = useState(null);
   const [code, setCode] = useState("// Write your code here...");
@@ -171,3 +172,5 @@ export default function QuestionPage() {
     </Box>
   );
 }
+
+export default withAuth(QuestionPage);
