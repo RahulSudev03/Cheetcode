@@ -13,10 +13,14 @@ import {
   Divider,
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
+
 import { motion } from "framer-motion";
 import ThemeProviderWrapper from "../../ThemeProviderWrapper"; // Adjust the path as needed
 
-export default function QuestionPage() {
+import withAuth from "@/app/utils/hoc/withAuth";
+
+
+function QuestionPage() {
   const [question, setQuestion] = useState(null);
   const [error, setError] = useState(null);
   const [code, setCode] = useState("// Write your code here...");
@@ -344,3 +348,5 @@ export default function QuestionPage() {
     </ThemeProviderWrapper>
   );
 }
+
+export default withAuth(QuestionPage);

@@ -11,8 +11,9 @@ import {
   InputLabel,
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
+import withAuth from "../utils/hoc/withAuth";
 
-export default function MockInterviewPage() {
+function MockInterviewPage() {
   const [question, setQuestion] = useState(null);
   const [error, setError] = useState(null);
   const [code, setCode] = useState("// Write your code here...");
@@ -258,3 +259,5 @@ export default function MockInterviewPage() {
     </Box>
   );
 }
+
+export default withAuth(MockInterviewPage);

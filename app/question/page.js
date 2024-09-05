@@ -8,8 +8,9 @@ import Footer from '../utils/Footer';
 import ToggleDarkMode from '../utils/ToggleDarkMode';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import withAuth from '../utils/hoc/withAuth';
 
-export default function QuestionList() {
+function QuestionList() {
   const [questions, setQuestions] = useState([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [selectedView, setSelectedView] = useState('difficulty');
@@ -356,3 +357,5 @@ export default function QuestionList() {
     </Box>
   );
 }
+
+export default withAuth(QuestionList);

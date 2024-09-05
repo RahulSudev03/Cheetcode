@@ -1,19 +1,30 @@
 import Script from "next/script";
 
 const Analytics = () => {
-    return (
-        <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}></script>
-            <script>
-            {`window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+  const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS;
 
-            gtag('config', ${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS});`}
-            </script>
+  if (!googleAnalyticsId) {
+    console.error('Google Analytics ID is missing. Please add NEXT_PUBLIC_GOOGLE_ANALYTICS to your environment variables.');
+    return null; 
+  }
 
-        </>
-    );
+  return (
+    <>
+      <Script 
+        src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '${googleAnalyticsId}');
+        `}
+      </Script>
+    </>
+  );
 };
 
 export default Analytics;

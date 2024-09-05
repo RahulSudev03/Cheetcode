@@ -19,11 +19,13 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Link from 'next/link';
 import AuthButtons from './AuthenticationButton'; // Adjust the path if necessary
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 const pages = ['Practice', 'Roadmap', 'Interview', 'Waitlist'];
 const settings = ['Profile', 'Account', 'Dashboard'];
 
 function ResponsiveAppBar() {
+  const router = useRouter();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [mode, setMode] = React.useState('dark');
@@ -71,6 +73,7 @@ function ResponsiveAppBar() {
   const handleLogout = () => {
     Cookies.remove('token');
     setIsAuthenticated(false);
+    router.push("/");
     // Optionally, redirect to the home page or login page
   };
 
@@ -145,7 +148,6 @@ function ResponsiveAppBar() {
                 ))}
               </Menu>
             </Box>
-            <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
             <Typography
               variant="h5"
               noWrap
