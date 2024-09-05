@@ -1,216 +1,287 @@
 "use client";
 
-import * as React from 'react';
-import { Typography, Box, Grid, Button } from "@mui/material";
-import ResponsiveAppBar from "./utils/ResponsiveAppBar";
-import Footer from './utils/Footer';
-import ToggleDarkMode from './utils/ToggleDarkMode';
-import { motion, useAnimation } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import {
+  Box,
+  Typography,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  Grid,
+  Paper,
+  Divider,
+} from "@mui/material";
+import Editor from "@monaco-editor/react";
+import { motion } from "framer-motion";
 
-export default function Main() {
-  const controls = useAnimation();
-  const [headerRef, headerInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+export default function QuestionPage() {
+  const [question, setQuestion] = useState(null);
+  const [error, setError] = useState(null);
+  const [code, setCode] = useState("// Write your code here...");
+  const [output, setOutput] = useState("");
+  const [language, setLanguage] = useState("javascript"); // Default language
+  const { name } = useParams();
+  const languages = [
+    { label: "JavaScript", value: "javascript" },
+    { label: "Python", value: "python" },
+    { label: "Java", value: "java" },
+    { label: "C++", value: "c++" },
+    { label: "Ruby", value: "ruby" },
+  ];
 
-  React.useEffect(() => {
-    if (headerInView) {
-      controls.start("visible");
+  const editorRef = useRef(null);
+  const terminalRef = useRef(null);
+  const [editorHeight, setEditorHeight] = useState(60); // Initial percentage height for the editor
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (!name) return;
+
+    const fetchQuestion = async () => {
+      try {
+        const response = await fetch(`/api/uploadQuestion?name=${name}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch question: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setQuestion(data.question);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchQuestion();
+  }, [name]);
+
+  const runCode = async () => {
+    try {
+      const response = await fetch("/api/runCode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: question.testCase,
+        }),
+      });
+
+      const data = await response.json();
+
+      setOutput(
+        data.results.map((result, index) => (
+          <Box key={index} sx={{ marginTop: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Output:
+            </Typography>
+            <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+              <strong>Input:</strong> {result.input}
+              <br />
+              <strong>Expected:</strong> {result.expectedOutput}
+              <br />
+              <strong>Actual:</strong> {result.actualOutput}
+              <br />
+              {result.passed ? "Passed" : "Failed"}
+            </Typography>
+          </Box>
+        ))
+      );
+    } catch (error) {
+      setOutput("Error running code: " + error.message);
     }
-  }, [headerInView, controls]);
-
-  const scrollAnimationVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  const featureVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, type: 'spring', stiffness: 300 } },
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const editorTop = editorRef.current.getBoundingClientRect().top;
+      const parentHeight = editorRef.current.parentElement.clientHeight;
+      const newEditorHeight = ((e.clientY - editorTop) / parentHeight) * 100;
+
+      if (newEditorHeight >= 20 && newEditorHeight <= 80) {
+        setEditorHeight(newEditorHeight);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
+
+  if (error) return <p>Error: {error}</p>;
+  if (!question) return <p>Loading...</p>;
+
+  const animationVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', color: '#ffffff' }}>
-      <ResponsiveAppBar />
-      <Box sx={{ paddingTop: '16px', mt: 15, px: 2, maxWidth: "1200px", margin: "auto" }}>
-        <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 2 }} textAlign="center">
-          {/* Header Section */}
-          <Grid 
-            item 
-            xs={12} 
-            sx={{ 
-              mb: 4, 
-              backgroundImage: "url('https://littlevisuals.co/images/moon.jpg?nf_resize=smartcrop&w=500&h=375')", 
-              backgroundSize: 'cover', 
-              backgroundPosition: 'center', 
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
-              borderRadius: '8px', 
-              padding: '40px 20px', 
-              textAlign: 'center',
-              backgroundColor: '#161b22',
-            }}
-            ref={headerRef}
-          >
-            <motion.div
-              initial="hidden"
-              animate={controls}
-              variants={scrollAnimationVariants}
-            >
-              <Typography
-                fontWeight="bold"
-                sx={{ 
-                  mt: 10, 
-                  fontSize: { xs: "24px", sm: "32px", md: "40px" },  
-                  color: '#c9d1d9', 
-                }}
-              >
-                Welcome to CheetCode
+    <Box sx={{ minHeight: "100vh", bgcolor: "#161b22", color: "#c9d1d9", padding: 2 }}>
+      <Grid container spacing={2} sx={{ height: "100vh" }}>
+        {/* Left side for question and test cases */}
+        <Grid
+          item
+          xs={12}
+          md={6}
+          component={motion.div}
+          initial="hidden"
+          animate="visible"
+          variants={animationVariants}
+          sx={{
+            padding: 3,
+            backgroundColor: "#1e1e1e",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+          }}
+        >
+          <Typography variant="h4" gutterBottom>
+            {question.name}
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {question.description}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, color: "#8b949e" }}>
+            Difficulty: {question.difficulty}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 4, color: "#8b949e" }}>
+            Algorithm: {question.algorithm}
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Example Test Cases:
+          </Typography>
+          {question.testCase.map((testCase, idx) => (
+            <Box key={idx} sx={{ mb: 4 }}>
+              <Typography variant="body2">
+                <strong>Example {idx + 1}:</strong>
               </Typography>
-              <Typography
-                fontWeight="bold"
-                sx={{ 
-                  mt: 1, 
-                  fontSize: { xs: "18px", sm: "24px", md: "30px" }, 
-                  color: '#8b949e' 
-                }}
-              >
-                Start exploring
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Input:</strong> {testCase.input}
               </Typography>
-              <Typography
-                sx={{ 
-                  mt: 2, 
-                  mb: 4, 
-                  mx: { xs: "20px", sm: "40px", md: "80px" }, 
-                  fontSize: { xs: "14px", sm: "18px", md: "22px" }, 
-                  color: '#8b949e' 
-                }}
-              >
-                A beginner-friendly platform for STEM interview preparation, offering tailored practice and real-time AI feedback, a versatile code editor, support for multiple languages, personalized guidance to excel in technical interviews.
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                <strong>Output:</strong> {testCase.output}
               </Typography>
-              <Box 
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  gap: 6, 
-                  mt: 1,
-                  width: '100%',
-                  mb: 8,
-                }}
-              >
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: '#3b4048',  
-                    color: '#ffffff', 
-                    ':hover': { bgcolor: '#828fa4' },
-                    fontSize: { xs: "14px", sm: "16px", md: "18px" },
-                    border: 'none',
-                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.15)',
-                    px: { xs: 3, sm: 4, md: 5 },
-                    py: { xs: 1, sm: 1.5, md: 2 },
-                    width: { xs: "140px", sm: "160px", md: "180px" },
-                    height: { xs: "40px", sm: "50px", md: "60px" },
-                    borderRadius: '6px'
-                  }}
-                >
-                  Mock Interview
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: '#3b4048',  
-                    color: '#ffffff', 
-                    ':hover': { bgcolor: '#828fa4' },
-                    fontSize: { xs: "14px", sm: "16px", md: "18px" },
-                    border: 'none',
-                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.15)',
-                    px: { xs: 3, sm: 4, md: 5 },
-                    py: { xs: 1, sm: 1.5, md: 2 },
-                    width: { xs: "140px", sm: "160px", md: "180px" },
-                    height: { xs: "40px", sm: "50px", md: "60px" },
-                    borderRadius: '6px'
-                  }}
-                >
-                  Practice
-                </Button>
-              </Box>
-            </motion.div>
-          </Grid>
-          
-          {/* Features Section */}
-          <Grid container sx={{ mt: 10, mb: 15, px: { xs: 2, sm: 4, md: 8 } }} justifyContent="center">
-            <Grid item xs={12}>
-              <Typography marginBottom='25px' fontWeight='bold' sx={{ fontSize: { xs: "28px", sm: "34px", md: "40px" }, color: '#58a6ff', textAlign: 'center' }}>
-                Features
-              </Typography>
-            </Grid>
-
-            {/* Feature Items */}
-            <Grid container spacing={4} justifyContent="center">
-              {/* AI Assistance Feature */}
-              <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  variants={featureVariants}
-                >
-                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
-                    {/* <img src="your-icon-url-here" alt="AI Assistance Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
-                    <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>AI Assistance</Typography>
-                    <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
-                      Real-Time Feedback: AI provides instant feedback on code, identifying errors and suggesting improvements.
-                      <br /><br />Guided Problem Solving: AI helps users understand which data structures and algorithms to use.
-                      <br /><br />Customized Problem Sets: AI generates personalized problem lists based on user strengths, weaknesses, and progress.
-                    </Typography>
-                  </Box>
-                </motion.div>
-              </Grid>
-
-              {/* User Progress Tracking Feature */}
-              <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  variants={featureVariants}
-                >
-                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
-                    {/* <img src="your-icon-url-here" alt="User Progress Tracking Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
-                    <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>User Progress Tracking</Typography>
-                    <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
-                      Performance Analytics: Detailed analytics showing user progress, strengths, and areas for improvement.
-                      <br /><br />Personalized Recommendations: Tailored suggestions for practice problems and study material.
-                    </Typography>
-                  </Box>
-                </motion.div>
-              </Grid>
-
-              {/* Practice Feature */}
-              <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  variants={featureVariants}
-                >
-                  <Box sx={{ p: 4, backgroundColor: '#1e1e1e', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxWidth: '350px', mx: 'auto' }}>
-                    {/* <img src="your-icon-url-here" alt="Practice Icon" style={{ width: '70px', height: '70px', marginBottom: '15px' }} /> */}
-                    <Typography variant='h6' sx={{ fontWeight: 'bold', fontSize: { xs: "18px", sm: "20px", md: "22px" }, color: '#98c379', marginBottom: '15px' }}>Practice</Typography>
-                    <Typography sx={{ fontSize: { xs: "14px", sm: "16px", md: "18px" }, color: '#abb2bf', lineHeight: 1.5 }}>
-                      Real-World Scenarios: Practice problems based on real interview questions and challenges.
-                      <br /><br />Code Editor Support: A versatile code editor with syntax highlighting, autocompletion, and debugging tools.
-                      <br /><br />Multi-Language Support: Practice coding in various languages including Python, JavaScript, and C++.
-                    </Typography>
-                  </Box>
-                </motion.div>
-              </Grid>
-            </Grid>
-          </Grid>
+            </Box>
+          ))}
         </Grid>
-      </Box>
-      <Footer />
-      <ToggleDarkMode />
+
+        {/* Right side for code editor and terminal */}
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            paddingLeft: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mb: 2,
+              padding: 2,
+              bgcolor: "#1e1e1e",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            }}
+          >
+            <FormControl sx={{ minWidth: 120, mr: 2 }}>
+              <Select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                sx={{ color: "#c9d1d9" }}
+              >
+                {languages.map((lang) => (
+                  <MenuItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              sx={{
+                bgcolor: "#3b4048",
+                color: "#ffffff",
+                ":hover": { bgcolor: "#828fa4" },
+                borderRadius: "6px",
+                padding: "10px 20px",
+                fontSize: "16px",
+              }}
+              onClick={runCode}
+            >
+              Run Code
+            </Button>
+          </Box>
+
+          {/* Code Editor and Terminal with Horizontal Slider */}
+          <Box ref={editorRef} sx={{ flexBasis: `${editorHeight}%`, flexGrow: 1 }}>
+            <Editor
+              height="100%"
+              language={language}
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || "")}
+            />
+          </Box>
+
+          <Divider
+            sx={{
+              cursor: "row-resize",
+              height: "10px",
+              bgcolor: "divider",
+              backgroundColor: "#3b4048",
+            }}
+            onMouseDown={handleMouseDown}
+          />
+
+          <Box
+            ref={terminalRef}
+            sx={{
+              flexGrow: 1,
+              flexBasis: `${100 - editorHeight}%`,
+              overflowY: "auto",
+              bgcolor: "#1e1e1e",
+              color: "#c9d1d9",
+              p: 2,
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Terminal:
+            </Typography>
+            {output}
+          </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
+
