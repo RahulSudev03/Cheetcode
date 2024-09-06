@@ -15,7 +15,7 @@ import {
 import Editor from "@monaco-editor/react";
 
 import { motion } from "framer-motion";
-import ThemeProviderWrapper from "../../ThemeProviderWrapper"; // Adjust the path as needed
+import ThemeProviderWrapper from "../../ThemeProviderWrapper";
 
 import withAuth from "@/app/utils/hoc/withAuth";
 
