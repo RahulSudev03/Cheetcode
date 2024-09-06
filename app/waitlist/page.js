@@ -15,10 +15,11 @@ export default function Waitlist() {
     e.preventDefault();
     setMessage(''); // Clear previous messages
   
-    if (!captchaToken) {
-      setMessage('Please complete the CAPTCHA.');
-      return;
-    }
+
+    // if (!captchaToken) {
+    //   setMessage('Please complete the CAPTCHA.');
+    //   return;
+    // }
 
     try {
       const response = await fetch('/api/waitlist', {
@@ -26,7 +27,7 @@ export default function Waitlist() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, captchaToken }),
+        body: JSON.stringify({ email }),
       });
   
       const data = await response.json();
@@ -101,10 +102,10 @@ export default function Waitlist() {
               required
               margin="normal"
             />
-            <ReCAPTCHA
+            {/* <ReCAPTCHA
               sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
               onChange={(token) => setCaptchaToken(token)}
-            />
+            /> */}
             <Button
               type="submit"
               variant="contained"

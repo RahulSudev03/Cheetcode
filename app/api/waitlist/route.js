@@ -6,22 +6,22 @@ import { sendConfirmationEmail } from '../../utils/sendEmail';
 export async function POST(req) {
   await dbConnect();
 
-  const { email, captchaToken } = await req.json();
+  const { email } = await req.json();
 
-  // Verify reCAPTCHA
-  const response = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`,
-  });
+  // // Verify reCAPTCHA
+  // const response = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/x-www-form-urlencoded',
+  //   },
+  //   body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`,
+  // });
 
-  const data = await response.json();
+  // const data = await response.json();
 
-  if (!data.success) {
-    return NextResponse.json({ error: 'reCAPTCHA validation failed' }, { status: 400 });
-  }
+  // if (!data.success) {
+  //   return NextResponse.json({ error: 'reCAPTCHA validation failed' }, { status: 400 });
+  // }
 
   if (!email || !email.includes('@')) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
