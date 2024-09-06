@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Box, CircularProgress, Container, Typography, Button } from "@mui/material";
 
-const ResultPage = () => {
+const ResultPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const session_id = searchParams.get("session_id");
@@ -84,6 +84,14 @@ const ResultPage = () => {
         </>
       )}
     </Container>
+  );
+};
+
+const ResultPage = () => {
+  return (
+    <Suspense fallback={<CircularProgress />}>
+      <ResultPageContent />
+    </Suspense>
   );
 };
 
