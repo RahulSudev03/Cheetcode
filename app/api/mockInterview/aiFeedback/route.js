@@ -7,8 +7,8 @@ const openai = new OpenAI({
 
 export async function POST(req) {
   try {
-    const { code, questionDescription, testCases, language } = await req.json();
-    console.log("Received data:", { code, questionDescription, testCases });
+    const { code, questionDescription, testCases, language, userMessage } = await req.json();
+    console.log("Received data:", { code, questionDescription, testCases, language, userMessage });
 
     if (!questionDescription || !testCases || !language) {
       return NextResponse.json(
@@ -20,25 +20,30 @@ export async function POST(req) {
     let messages = [
       {
         role: "system",
-        content: "You are an assistant that provides feedback on code.",
+        content: "You are a technical interviewer providing feedback and guidance for coding problems. Gradually lead the candidate through solving the problem by asking questions, checking their understanding of concepts, and providing feedback on their code and approach. Respond in a conversational manner as if you are a technical interviewer guiding the candidate.",
       },
       {
         role: "user",
-        content: `Here is the problem description:\n\n${questionDescription}\n\nHere are the test cases:\n\n${testCases}\n\nThe selected language is ${language}.`,
+        content: `The candidate is working on the following problem:\n\nProblem Description: ${questionDescription}\n\nTest Cases: ${testCases}\n\nLanguage: ${language}.`,
       },
     ];
 
-    if (!code) {
-      // If no code is provided, the AI should help the user get started
+    if (userMessage) {
       messages.push({
         role: "user",
-        content: `The user hasn't provided any code yet. Can you help them get started on solving this problem in ${language}?`,
+        content: `The candidate has the following question:\n\n"${userMessage}"`,
+      });
+    }
+
+    if (code) {
+      messages.push({
+        role: "user",
+        content: `The candidate has provided the following ${language} code:\n\n${code}\n\nAsk follow-up questions regarding the approach, edge cases, and time complexity. Provide feedback, but ask probing questions to encourage the candidate to think critically about their solution.`,
       });
     } else {
-      // If code is provided, ask the AI to give feedback
       messages.push({
         role: "user",
-        content: `Please provide feedback on the following ${language} code:\n\n${code}`,
+        content: `The candidate hasn't provided any code yet. Start by asking basic questions to help them think about the problem conceptually. Lead them to consider edge cases, time complexity, and possible strategies.`,
       });
     }
 
@@ -48,6 +53,7 @@ export async function POST(req) {
     });
 
     const feedback = completion.choices[0].message.content;
+
     return NextResponse.json({ success: true, feedback });
   } catch (error) {
     console.error("Error getting AI feedback:", error);

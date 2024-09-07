@@ -32,7 +32,6 @@ function QuestionPage() {
     { label: "Python", value: "python" },
     { label: "Java", value: "java" },
     { label: "C++", value: "c++" },
-    { label: "Ruby", value: "ruby" },
   ];
 
   const getDifficultyStyle = (difficulty) => {
