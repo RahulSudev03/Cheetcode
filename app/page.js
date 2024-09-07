@@ -102,6 +102,12 @@ export default function Main() {
               variants={scrollAnimationVariants}
             >
               <Typography
+                sx={{
+                  fontSize: { xs: "24px", sm: "32px", md: "40px" },
+                  color: "#c9d1d9",
+                }}
+              >Coming Soon...</Typography>
+              <Typography
                 fontWeight="bold"
                 sx={{
                   mt: 10,
