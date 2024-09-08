@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Box, Typography, Button, Select, Grid, MenuItem, FormControl, TextField } from "@mui/material";
+import { Box, Typography, Button, Select, Grid, MenuItem, IconButton, FormControl, TextField } from "@mui/material";
 import Editor from "@monaco-editor/react";
 import ThemeProviderWrapper from "../ThemeProviderWrapper";
 import withAuth from "../utils/hoc/withAuth";
+import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt'; // For the chat icon
+import CloseIcon from "@mui/icons-material/Close"; // For closing the chat
+import AssistantIcon from '@mui/icons-material/Assistant';
 
 function MockInterviewPage() {
   const [question, setQuestion] = useState(null);
@@ -13,8 +16,9 @@ function MockInterviewPage() {
   const [aiFeedback, setAiFeedback] = useState("");
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 1 hour in seconds
   const [language, setLanguage] = useState("javascript"); // Default language
-  const [userMessage, setUserMessage] = useState(""); 
-  const [isDragging, setIsDragging] = useState(false); 
+  const [userMessage, setUserMessage] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const editorRef = useRef(null);
   const terminalRef = useRef(null);
   const [editorHeight, setEditorHeight] = useState(60);
@@ -94,7 +98,7 @@ function MockInterviewPage() {
       console.log("AI Feedback Response:", data);
 
       if (data.success) {
-        setAiFeedback(data.feedback); 
+        setAiFeedback(data.feedback);
       } else {
         setAiFeedback("Error generating feedback: " + data.error);
       }
@@ -102,6 +106,10 @@ function MockInterviewPage() {
       console.error("Error fetching AI feedback:", error);
       setAiFeedback("Error fetching AI feedback.");
     }
+  };
+
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen); // Toggle the chat visibility
   };
 
   const runCode = async () => {
@@ -182,51 +190,44 @@ function MockInterviewPage() {
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary", padding: 2 }}>
         <Grid container spacing={2} sx={{ height: "100vh" }}>
           <Grid item xs={12} md={6} sx={{ padding: 3, overflow: "auto", backgroundColor: "background.paper", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}>
-            <Typography variant="h6" fontWeight="bold">
-              Time Left:{" "}
-              <Box component="span" sx={{ display: "inline-block", padding: "8px 16px", backgroundColor: "#D3D3D3", color: "black", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", fontWeight: "bold", fontSize: "1rem" }}>
-                {formatTime(timeLeft)}
+            <Box ref={terminalRef} sx={{ flex: 30, bgcolor: "#333", color: "#fff", p: 2, borderRadius: "8px", overflowY: "auto", maxHeight: "500vh" }}>
+              <Typography variant="h6" fontWeight="bold">
+                Time Left:{" "}
+                <Box component="span" sx={{ display: "inline-block", padding: "8px 16px", backgroundColor: "#D3D3D3", color: "black", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", fontWeight: "bold", fontSize: "1rem" }}>
+                  {formatTime(timeLeft)}
+                </Box>
+              </Typography>
+              <Typography variant="h4" gutterBottom>{question.name}</Typography>
+              <Typography variant="body1" sx={{ mb: 2, fontWeight: "bold", marginTop: 2 }}>
+                Description: {question.description}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  ...getDifficultyStyle(question.difficulty),
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  textTransform: 'capitalize',
+                  marginRight: 2, // Add spacing between the tag and the algorithm
+                }}
+              >
+                {question.difficulty}
               </Box>
-            </Typography>
-            <Typography variant="h4" gutterBottom>{question.name}</Typography>
-            <Typography variant="body1" sx={{ mb: 2, fontWeight: "bold", marginTop: 2 }}>
-              Description: {question.description}
-            </Typography>
-            <Box
-              sx={{
-                display: 'inline-block',
-                ...getDifficultyStyle(question.difficulty),
-                borderRadius: '4px',
-                padding: '2px 8px',
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                textTransform: 'capitalize',
-                marginRight: 2, // Add spacing between the tag and the algorithm
-              }}
-            >
-              {question.difficulty}
+              <Typography variant="body2" sx={{ mb: 4, fontWeight: "bold", marginTop: 2 }}>
+                Algorithm: {question.algorithm}
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 2 }}>Example Test Cases:</Typography>
+              {question.testCase.map((testCase, idx) => (
+                <Box key={idx} sx={{ mb: 4, p: 2, bgcolor: "#D3D3D3", color: "#000000", borderRadius: "4px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Example {idx + 1}:</strong></Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Input:</strong> {testCase.input}</Typography>
+                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Output:</strong> {testCase.output}</Typography>
+                </Box>
+              ))}
+
             </Box>
-            <Typography variant="body2" sx={{ mb: 4, fontWeight: "bold", marginTop: 2 }}>
-              Algorithm: {question.algorithm}
-            </Typography>
-            <Typography variant="h6" sx={{ mb: 2 }}>Example Test Cases:</Typography>
-            {question.testCase.map((testCase, idx) => (
-              <Box key={idx} sx={{ mb: 4, p: 2, bgcolor: "#D3D3D3", color: "#000000", borderRadius: "4px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}>
-                <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Example {idx + 1}:</strong></Typography>
-                <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Input:</strong> {testCase.input}</Typography>
-                <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Output:</strong> {testCase.output}</Typography>
-              </Box>
-            ))}
-
-            <TextField label="Message to AI" multiline minRows={3} value={userMessage} onChange={(e) => setUserMessage(e.target.value)} fullWidth variant="outlined" sx={{ marginBottom: 2 }} />
-            <Button variant="contained" color="secondary" onClick={fetchAiFeedback} sx={{ marginLeft: 2 }}>Get AI Feedback</Button>
-
-            {aiFeedback && (
-              <Box sx={{ marginTop: 2 }}>
-                <Typography variant="h6" gutterBottom>AI Feedback:</Typography>
-                <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>{aiFeedback}</Typography>
-              </Box>
-            )}
           </Grid>
 
           <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", height: "100vh", paddingLeft: 2 }}>
@@ -251,6 +252,51 @@ function MockInterviewPage() {
                 <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>Console:</Typography>
                 <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{output}</Typography>
               </Box>
+              <IconButton sx={{ position: "fixed", bottom: 16, right: 16, zIndex: 1000 }} onClick={toggleChat}>
+                <AssistantIcon sx={{ fontSize: 40 }} />
+              </IconButton>
+              <Box
+                sx={{
+                  position: "fixed",
+                  top: 0,
+                  right: isChatOpen ? 0 : "-300px", // Slide in from the right
+                  width: "300px",
+                  height: "100%",
+                  bgcolor: "#333",
+                  color: "#fff",
+                  transition: "right 0.3s ease",
+                  boxShadow: "-2px 0 5px rgba(0,0,0,0.5)",
+                  zIndex: 1100,
+                  display: "flex",
+                  flexDirection: "column",
+                  p: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="h6">Get AI Feedback</Typography>
+                  <IconButton onClick={toggleChat} sx={{ color: "#fff" }}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+
+                <Box sx={{ flexGrow: 1, overflowY: "auto", my: 2 }}>
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>{aiFeedback}</Typography>
+                </Box>
+
+                <TextField
+                  label="Message to AI"
+                  variant="outlined"
+                  multiline
+                  minRows={3}
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
+                  sx={{ bgcolor: "black", color: "#000", borderRadius: "4px" }}
+                />
+                <Button variant="contained" color="primary" onClick={fetchAiFeedback} sx={{ mt: 2 }}>
+                  Send
+                </Button>
+              </Box>
+
             </Box>
           </Grid>
         </Grid>
