@@ -1,5 +1,6 @@
-"use client"
+"use client";
 import React, { useState } from 'react';
+import ResponsiveAppBar from '../utils/ResponsiveAppBar'; // Adjust the path if necessary
 
 const dataStructures = {
   "Arrays": "An array is a collection of items stored at contiguous memory locations. It is used to store elements of the same type.",
@@ -28,64 +29,70 @@ export default function Roadmap() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#1e1e2f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-      {/* Title */}
-      <h1 style={{ color: '#00bfff', marginBottom: '20px', position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)' }}></h1>
+    <>
+      {/* Include the Navigation Bar */}
+      <ResponsiveAppBar />
 
-      {/* SVG for Straight Arrows */}
-      <svg style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, pointerEvents: 'none' }}>
-        <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#00bfff" />
-          </marker>
-        </defs>
-        {/* Adjusted lines for arrows */}
-        <line x1="50%" y1="50%" x2="50%" y2="20%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="75%" y2="25%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="85%" y2="50%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="75%" y2="75%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="50%" y2="85%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="25%" y2="75%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="15%" y2="50%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-        <line x1="50%" y1="50%" x2="25%" y2="25%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
-      </svg>
+      {/* Main Roadmap Content */}
+      <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#1e1e2f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        {/* Title */}
+        <h1 style={{ color: '#00bfff', marginBottom: '20px', position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)' }}></h1>
 
-      {/* Central Circular Node */}
-      <div id="dataStructures" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '30px', border: '2px solid #00bfff', borderRadius: '50%', backgroundColor: '#FFD700', zIndex: '1' }}>
-      <h2 style={{ margin: 0, fontWeight: 'bold', color: '#000' }}>Data Structures</h2>
-      </div>
+        {/* SVG for Straight Arrows */}
+        <svg style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, pointerEvents: 'none' }}>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#00bfff" />
+            </marker>
+          </defs>
+          {/* Adjusted lines for arrows */}
+          <line x1="50%" y1="50%" x2="50%" y2="20%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="75%" y2="25%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="85%" y2="50%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="75%" y2="75%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="50%" y2="85%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="25%" y2="75%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="15%" y2="50%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+          <line x1="50%" y1="50%" x2="25%" y2="25%" stroke="#00bfff" strokeWidth="2" markerEnd="url(#arrowhead)" />
+        </svg>
 
-      {/* Positioned Nodes in a Circular Layout */}
-      <button onClick={() => handleClick('Binary Search')} style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Binary Search</button>
-      <button onClick={() => handleClick('Sliding Window')} style={{ position: 'absolute', top: '25%', left: '75%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Sliding Window</button>
-      <button onClick={() => handleClick('Hashmaps')} style={{ position: 'absolute', top: '50%', left: '85%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Hashmaps</button>
-      <button onClick={() => handleClick('Graphs')} style={{ position: 'absolute', top: '75%', left: '75%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Graphs</button>
-      <button onClick={() => handleClick('Heap')} style={{ position: 'absolute', top: '90%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Heap</button>
-      <button onClick={() => handleClick('Backtracking')} style={{ position: 'absolute', top: '75%', left: '25%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Backtracking</button>
-      <button onClick={() => handleClick('Linked List')} style={{ position: 'absolute', top: '50%', left: '15%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Linked List</button>
-      <button onClick={() => handleClick('Trees')} style={{ position: 'absolute', top: '25%', left: '25%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Trees</button>
-
-      {/* Description Box */}
-      {selectedStructure && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          padding: '20px',
-          border: '2px solid #00bfff',
-          borderRadius: '10px',
-          backgroundColor: 'rgba(51, 51, 51, 0.9)',
-          color: '#fff',
-          maxWidth: '300px',
-          textAlign: 'center',
-          zIndex: '2',
-          fontWeight: 'bold'
-        }}>
-          <h3>{selectedStructure}</h3>
-          <p>{dataStructures[selectedStructure]}</p>
+        {/* Central Circular Node */}
+        <div id="dataStructures" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '30px', border: '2px solid #00bfff', borderRadius: '50%', backgroundColor: '#FFD700', zIndex: '1' }}>
+          <h2 style={{ margin: 0, fontWeight: 'bold', color: '#000' }}>Data Structures</h2>
         </div>
-      )}
-    </div>
+
+        {/* Positioned Nodes in a Circular Layout */}
+        <button onClick={() => handleClick('Binary Search')} style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Binary Search</button>
+        <button onClick={() => handleClick('Sliding Window')} style={{ position: 'absolute', top: '25%', left: '75%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Sliding Window</button>
+        <button onClick={() => handleClick('Hashmaps')} style={{ position: 'absolute', top: '50%', left: '85%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Hashmaps</button>
+        <button onClick={() => handleClick('Graphs')} style={{ position: 'absolute', top: '75%', left: '75%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Graphs</button>
+        <button onClick={() => handleClick('Heap')} style={{ position: 'absolute', top: '90%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Heap</button>
+        <button onClick={() => handleClick('Backtracking')} style={{ position: 'absolute', top: '75%', left: '25%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Backtracking</button>
+        <button onClick={() => handleClick('Linked List')} style={{ position: 'absolute', top: '50%', left: '15%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Linked List</button>
+        <button onClick={() => handleClick('Trees')} style={{ position: 'absolute', top: '25%', left: '25%', transform: 'translate(-50%, -50%)', backgroundColor: '#FFE599', color: '#000', border: '1px solid #000', borderRadius: '5px', padding: '10px', fontWeight: 'bold' }}>Trees</button>
+
+        {/* Description Box */}
+        {selectedStructure && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '20px',
+            border: '2px solid #00bfff',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(51, 51, 51, 0.9)',
+            color: '#fff',
+            maxWidth: '300px',
+            textAlign: 'center',
+            zIndex: '2',
+            fontWeight: 'bold'
+          }}>
+            <h3>{selectedStructure}</h3>
+            <p>{dataStructures[selectedStructure]}</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
