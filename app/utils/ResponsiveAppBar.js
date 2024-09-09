@@ -72,6 +72,7 @@ function ResponsiveAppBar() {
 
   const handleLogout = () => {
     Cookies.remove('token');
+    Cookies.remove('username');
     setIsAuthenticated(false);
     router.push("/");
     // Optionally, redirect to the home page or login page
