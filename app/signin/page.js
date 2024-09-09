@@ -23,7 +23,7 @@ export default function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await fetch('/api/signin', {
         method: 'POST',
@@ -32,11 +32,13 @@ export default function Signin() {
         },
         body: JSON.stringify({ username, password }),
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok) {
-        Cookies.set('token', result.token, { expires: 3 });
+        // Set cookies with values from the response
+        Cookies.set('token', result.token, { expires: 1, sameSite: 'None', secure: true });
+        Cookies.set('username', result.user.username, { expires: 1, sameSite: 'None', secure: true });
         setMessage(result.message);
         router.push('/');
       } else {
@@ -47,7 +49,7 @@ export default function Signin() {
       setMessage('An error occurred. Please try again.');
     }
   };
-
+  
   return (
     <div className={styles.container}>
       <div className={styles.formBox}>
