@@ -5,64 +5,62 @@ import User from '@/app/models/User';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export const config = {
-  api: {
-    bodyParser: false, // Required for Stripe signature verification
-  },
-};
+// Route segment config - configure bodyParser and runtime
+export const dynamic = 'force-dynamic'; // optional, based on your use case
+export const runtime = 'nodejs';        // Ensure it's run on Node.js
+export const bodyParser = false;        // Disable body parsing for Stripe
 
 export async function POST(req, res) {
-  if (req.method === 'POST') {
-    let event;
+  let event;
 
-    try {
-      // Retrieve the raw body
-      const rawBody = await buffer(req);
-      const signature = req.headers['stripe-signature'];
+  try {
+    // Retrieve the raw body
+    const rawBody = await buffer(req);
+    const signature = req.headers['stripe-signature'];
 
-      // Verify the event using Stripe's library
-      event = stripe.webhooks.constructEvent(
-        rawBody.toString(),
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
+    // Verify the event using Stripe's library
+    event = stripe.webhooks.constructEvent(
+      rawBody.toString(),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
 
-      // Log the event for debugging
-      console.log("Stripe Event: ", event);
-    } catch (err) {
-      console.error(`Webhook signature verification failed: ${err.message}`);
-      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
-    }
+    // Log the event for debugging
+    console.log("Stripe Event: ", event);
+  } catch (err) {
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+  }
 
-    // Handle the 'checkout.session.completed' event
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
+  // Handle the 'checkout.session.completed' event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
 
-      // Retrieve userId from the session's metadata
-      const userId = session.metadata?.userId;
+    // Retrieve userId from the session's metadata
+    const userId = session.metadata?.userId;
 
-      if (userId) {
-        try {
-          await dbConnect(); // Connect to the database
+    if (userId) {
+      try {
+        await dbConnect(); // Connect to the database
 
-          // Find the user and update their subscription status
-          await User.findByIdAndUpdate(userId, { isSubscribed: true });
-          console.log(`User ${userId} subscription status updated to true.`);
-        } catch (err) {
-          console.error('Error updating user subscription status:', err);
-          return new Response(`Database Error: ${err.message}`, { status: 500 });
-        }
-      } else {
-        console.error('User ID not found in session metadata.');
-        return new Response('User ID missing in session metadata', { status: 400 });
+        // Find the user and update their subscription status
+        await User.findByIdAndUpdate(userId, { isSubscribed: true });
+        console.log(`User ${userId} subscription status updated to true.`);
+      } catch (err) {
+        console.error('Error updating user subscription status:', err);
+        return new Response(`Database Error: ${err.message}`, { status: 500 });
       }
     } else {
-      console.log(`Unhandled event type ${event.type}`);
+      console.error('User ID not found in session metadata.');
+      return new Response('User ID missing in session metadata', { status: 400 });
     }
-
-    return new Response(JSON.stringify({ received: true }), { status: 200 });
+  } else {
+    console.log(`Unhandled event type ${event.type}`);
   }
+
+  return new Response(JSON.stringify({ received: true }), { status: 200 });
 }
+
 
 
 
