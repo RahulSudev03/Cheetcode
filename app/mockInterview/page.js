@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Box, Typography, Button, Select, Grid, MenuItem, IconButton, FormControl, TextField } from "@mui/material";
+import { Box, Typography, Button, Select, Grid, MenuItem, FormControl, TextField, InputAdornment, IconButton, AppBar, Toolbar } from "@mui/material";
 import Editor from "@monaco-editor/react";
 import ThemeProviderWrapper from "../ThemeProviderWrapper";
 import withAuth from "../utils/hoc/withAuth";
-import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt'; // For the chat icon
-import CloseIcon from "@mui/icons-material/Close"; // For closing the chat
-import AssistantIcon from '@mui/icons-material/Assistant';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'; // Importing the send/arrow icon
+import ResponsiveAppBar from "../utils/ResponsiveAppBar";
+import Divider from '@mui/material/Divider';
+import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt';
 
 function MockInterviewPage() {
   const [question, setQuestion] = useState(null);
@@ -17,10 +18,7 @@ function MockInterviewPage() {
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 1 hour in seconds
   const [language, setLanguage] = useState("javascript"); // Default language
   const [userMessage, setUserMessage] = useState("");
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const editorRef = useRef(null);
-  const terminalRef = useRef(null);
   const [editorHeight, setEditorHeight] = useState(60);
 
   const languages = [
@@ -30,35 +28,10 @@ function MockInterviewPage() {
     { label: "C++", value: "c++" },
   ];
 
-  const getDifficultyStyle = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case 'basic':
-        return { backgroundColor: '#B0B0B0', color: 'black' };
-      case 'easy':
-        return { backgroundColor: '#4CAF50', color: 'black' };
-      case 'medium':
-        return { backgroundColor: '#FFEB3B', color: 'black' };
-      case 'hard':
-        return { backgroundColor: '#F44336', color: 'black' };
-      default:
-        return { backgroundColor: '#000000', color: 'black' };
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -68,8 +41,18 @@ function MockInterviewPage() {
         const response = await fetch("/api/mockInterview/randomQuestion");
         if (!response.ok) throw new Error(`Failed to fetch random question: ${response.statusText}`);
         const data = await response.json();
-        if (data.success) setQuestion(data.question);
-        else setError(data.error);
+        if (data.success) {
+          setQuestion(data.question);
+
+          const formattedTestCases = data.question.testCase.map((testCase, index) => {
+            return `// Test Case ${index + 1}:\n// Input: ${testCase.input}\n// Output: ${testCase.output}\n`;
+          }).join("\n");
+
+          const questionComment = `// Question: ${data.question.name}\n// Description: ${data.question.description}\n\n`;
+          setCode(`${questionComment}${formattedTestCases}\n// Write your code here...`);
+        } else {
+          setError(data.error);
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -79,8 +62,6 @@ function MockInterviewPage() {
   }, []);
 
   const fetchAiFeedback = async () => {
-    console.log("Requesting AI feedback...");
-
     try {
       const response = await fetch("/api/mockInterview/aiFeedback", {
         method: "POST",
@@ -95,21 +76,15 @@ function MockInterviewPage() {
       });
 
       const data = await response.json();
-      console.log("AI Feedback Response:", data);
-
       if (data.success) {
         setAiFeedback(data.feedback);
       } else {
         setAiFeedback("Error generating feedback: " + data.error);
       }
     } catch (error) {
-      console.error("Error fetching AI feedback:", error);
       setAiFeedback("Error fetching AI feedback.");
     }
-  };
-
-  const toggleChat = () => {
-    setIsChatOpen(!isChatOpen); // Toggle the chat visibility
+    setUserMessage("");
   };
 
   const runCode = async () => {
@@ -121,8 +96,6 @@ function MockInterviewPage() {
       });
 
       const data = await response.json();
-      console.log("Received Response:", data);
-
       if (!data.results || !Array.isArray(data.results)) throw new Error("No results found in the response");
 
       setOutput(
@@ -146,158 +119,185 @@ function MockInterviewPage() {
     }
   };
 
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    e.preventDefault();
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      const editorTop = editorRef.current.getBoundingClientRect().top;
-      const parentHeight = editorRef.current.parentElement.clientHeight;
-      const newEditorHeight = ((e.clientY - editorTop) / parentHeight) * 100;
-
-      if (newEditorHeight >= 20 && newEditorHeight <= 80) {
-        setEditorHeight(newEditorHeight);
-      }
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    } else {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging]);
-
-  if (error) return <p>Error: {error}</p>;
-  if (!question) return <p>Loading...</p>;
-
   return (
     <ThemeProviderWrapper>
-      <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary", padding: 2 }}>
+      <ResponsiveAppBar />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          bgcolor: "#0d1117",
+          color: "text.primary",
+          padding: 2,
+          overflow: 'hidden', // Hide scrollbar by default
+          '&:hover': {
+            overflow: 'auto', // Show scrollbar on hover
+          },
+          '&::-webkit-scrollbar': {
+            width: '8px', // Width of the scrollbar
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#888', // Color of the scrollbar thumb
+            borderRadius: '8px', // Rounded corners of the scrollbar thumb
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#555', // Color when hovering over the scrollbar thumb
+          },
+        }}
+      >
         <Grid container spacing={2} sx={{ height: "100vh" }}>
-          <Grid item xs={12} md={6} sx={{ padding: 3, overflow: "auto", backgroundColor: "background.paper", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}>
-            <Box ref={terminalRef} sx={{ flex: 30, bgcolor: "#333", color: "#fff", p: 2, borderRadius: "8px", overflowY: "auto", maxHeight: "500vh" }}>
-              <Typography variant="h6" fontWeight="bold">
-                Time Left:{" "}
-                <Box component="span" sx={{ display: "inline-block", padding: "8px 16px", backgroundColor: "#D3D3D3", color: "black", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", fontWeight: "bold", fontSize: "1rem" }}>
-                  {formatTime(timeLeft)}
-                </Box>
-              </Typography>
-              <Typography variant="h4" gutterBottom>{question.name}</Typography>
-              <Typography variant="body1" sx={{ mb: 2, fontWeight: "bold", marginTop: 2 }}>
-                Description: {question.description}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'inline-block',
-                  ...getDifficultyStyle(question.difficulty),
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontSize: '0.75rem',
-                  fontWeight: 'bold',
-                  textTransform: 'capitalize',
-                  marginRight: 2, // Add spacing between the tag and the algorithm
-                }}
-              >
-                {question.difficulty}
-              </Box>
-              <Typography variant="body2" sx={{ mb: 4, fontWeight: "bold", marginTop: 2 }}>
-                Algorithm: {question.algorithm}
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 2 }}>Example Test Cases:</Typography>
-              {question.testCase.map((testCase, idx) => (
-                <Box key={idx} sx={{ mb: 4, p: 2, bgcolor: "#D3D3D3", color: "#000000", borderRadius: "4px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)" }}>
-                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Example {idx + 1}:</strong></Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Input:</strong> {testCase.input}</Typography>
-                  <Typography variant="body2" sx={{ mb: 1, color: "#000000" }}><strong>Output:</strong> {testCase.output}</Typography>
-                </Box>
-              ))}
+          {/* Left side - Code Editor with Console */}
+          <Grid item xs={12} md={7} sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", height: "100vh", paddingLeft: 2 }}>
-            <Box sx={{ display: "flex", overflow: "auto", justifyContent: "space-between", mb: 1, padding: 1, borderRadius: "8px" }}>
-              <FormControl sx={{ minWidth: 100, mr: 1 }}>
-                <Select value={language} onChange={(e) => setLanguage(e.target.value)} sx={{ color: "text.primary", fontSize: "0.75rem" }}>
+            {/* Language selection and run button */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1, padding: 1, borderRadius: "8px" }}>
+              <FormControl sx={{ minWidth: 80, mr: 1 }}>
+                <Select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  sx={{
+                    color: "text.primary",
+                    fontSize: "0.6rem",
+                    padding: "4px",
+                    '& .MuiSelect-select': { padding: "4px" }
+                  }}
+                >
                   {languages.map((lang) => (
-                    <MenuItem key={lang.value} value={lang.value} sx={{ fontSize: "0.75rem" }}>{lang.label}</MenuItem>
+                    <MenuItem
+                      key={lang.value}
+                      value={lang.value}
+                      sx={{ fontSize: "0.6rem" }}
+                    >
+                      {lang.label}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              <Button variant="contained" sx={{ bgcolor: "#4CAF50", color: "text.primary", ":hover": { bgcolor: "#45a049" }, borderRadius: "6px", padding: "8px 16px", fontSize: "0.75rem" }} onClick={runCode}>Run Code</Button>
-            </Box>
-
-            <Box ref={editorRef} sx={{ flex: 1, display: "flex", flexDirection: "column", borderRadius: "8px", overflow: "hidden" }}>
-              <Box sx={{ flex: editorHeight, position: "relative", height: 0 }}>
-                <Editor height="100%" defaultLanguage="javascript" value={code} onChange={(value) => setCode(value)} theme="vs-dark" />
-                <Box sx={{ position: "absolute", top: "calc(100% - 10px)", left: 0, right: 0, height: "5px", cursor: "row-resize", backgroundColor: "rgba(0, 0, 0, 0.3)" }} onMouseDown={handleMouseDown} />
-              </Box>
-
-              <Box ref={terminalRef} sx={{ flex: 30, bgcolor: "#333", color: "#fff", p: 2, borderRadius: "8px", overflowY: "auto", maxHeight: "500vh" }}>
-                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>Console:</Typography>
-                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{output}</Typography>
-              </Box>
-              <IconButton sx={{ position: "fixed", bottom: 16, right: 16, zIndex: 1000 }} onClick={toggleChat}>
-                <AssistantIcon sx={{ fontSize: 40 }} />
-              </IconButton>
-              <Box
+              <Button
+                variant="contained"
                 sx={{
-                  position: "fixed",
-                  top: 0,
-                  right: isChatOpen ? 0 : "-300px", // Slide in from the right
-                  width: "300px",
-                  height: "100%",
-                  bgcolor: "#333",
-                  color: "#fff",
-                  transition: "right 0.3s ease",
-                  boxShadow: "-2px 0 5px rgba(0,0,0,0.5)",
-                  zIndex: 1100,
-                  display: "flex",
-                  flexDirection: "column",
-                  p: 2,
+                  bgcolor: "#4CAF50",
+                  color: "text.primary",
+                  ":hover": { bgcolor: "#45a049" },
+                  borderRadius: "6px",
+                  padding: "4px 8px",
+                  fontSize: "0.6rem"
                 }}
+                onClick={runCode}
               >
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography variant="h6">Get AI Feedback</Typography>
-                  <IconButton onClick={toggleChat} sx={{ color: "#fff" }}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-
-                <Box sx={{ flexGrow: 1, overflowY: "auto", my: 2 }}>
-                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>{aiFeedback}</Typography>
-                </Box>
-
-                <TextField
-                  label="Message to AI"
-                  variant="outlined"
-                  multiline
-                  minRows={3}
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
-                  sx={{ bgcolor: "black", color: "#000", borderRadius: "4px" }}
-                />
-                <Button variant="contained" color="primary" onClick={fetchAiFeedback} sx={{ mt: 2 }}>
-                  Send
-                </Button>
-              </Box>
-
+                Run Code
+              </Button>
             </Box>
+
+
+            {/* Code Editor */}
+            <Box ref={editorRef} sx={{ flex: editorHeight, borderRadius: "8px", overflow: "hidden", height: "100%" }}>
+              <Editor height="100%" defaultLanguage="javascript" value={code} onChange={(value) => setCode(value)} theme="vs-dark" />
+            </Box>
+
+            {/* Console Output */}
+            <Box sx={{ flex: 30, bgcolor: "black", color: "#fff", p: 2, borderRadius: "8px", overflowY: "auto", maxHeight: "40vh" }}>
+              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>Console:</Typography>
+              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{output}</Typography>
+            </Box>
+          </Grid>
+
+
+          <Divider orientation="vertical" variant="middle" flexItem="true" />
+
+          {/* Right side - AI Feedback */}
+
+          <Grid item xs={12} md={4.5} sx={{ display: "flex", flexDirection: "column", paddingLeft: 2, height: "100vh", bgcolor: "#0d1117", color: "#fff", mt: 2 }}>
+            <Typography variant="h6" fontWeight="bold">
+              Time Left:{" "}
+              <Box component="span" sx={{ display: "inline-block", padding: "8px 16px", backgroundColor: "#D3D3D3", color: "black", borderRadius: "8px", fontWeight: "bold", fontSize: "1rem" }}>
+                {new Date(timeLeft * 1000).toISOString().substr(11, 8)}
+              </Box>
+            </Typography>
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflowY: 'hidden',
+                my: 2,
+                '&:hover': {
+                  overflowY: 'auto', // Show scrollbar on hover
+                },
+                '&::-webkit-scrollbar': {
+                  width: '8px', // Width of the scrollbar
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#888', // Color of the scrollbar thumb
+                  borderRadius: '8px', // Rounded corners of the scrollbar thumb
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  backgroundColor: '#555', // Color when hovering over the scrollbar thumb
+                }
+              }}
+            >
+              {/* AI Feedback Heading */}
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: 'text.primary' }}>
+                AI Feedback:
+              </Typography>
+
+              {/* AI Feedback Content */}
+              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", color: 'text.primary' }}>
+                {aiFeedback}
+              </Typography>
+            </Box>
+
+
+            <TextField
+              label="Message to AI"
+              variant="outlined"
+              multiline
+              minRows={1}
+              maxRows={5}
+              value={userMessage}
+              onChange={(e) => setUserMessage(e.target.value)}
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={fetchAiFeedback} // Action for sending the message
+                      edge="end"
+                      sx={{
+                        color: '#000', // Icon color
+                        bgcolor: '#fff', // Background color of the icon
+                        borderRadius: '50%', // Makes the background round
+                        p: 0.5, // Padding around the icon
+                        '&:hover': {
+                          bgcolor: '#e0e0e0', // Light gray background on hover
+                        },
+                        mr: 1,
+                        // Space to the right of the icon
+                      }}
+                    >
+                      <ArrowUpwardIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                bgcolor: "#001f3f", // Dark blue background
+                borderRadius: "16px", // Rounded corners
+                color: "text.primary",
+                mb: 2, // Margin at the bottom
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)', // Border color
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)', // Border color on hover
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: "#fff", // Text color
+                },
+              }}
+            />
           </Grid>
         </Grid>
       </Box>
