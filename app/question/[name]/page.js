@@ -15,10 +15,11 @@ import {
 import Editor from "@monaco-editor/react";
 
 import { motion } from "framer-motion";
-import ThemeProviderWrapper from "../../ThemeProviderWrapper";
+import ThemeProviderWrapper from "../../ThemeProviderWrapper"; // Adjust the path as needed
 
 import withAuth from "@/app/utils/hoc/withAuth";
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 function QuestionPage() {
   const [question, setQuestion] = useState(null);
@@ -27,6 +28,7 @@ function QuestionPage() {
   const [output, setOutput] = useState("");
   const [language, setLanguage] = useState("javascript");
   const { name } = useParams();
+  const [username, setUsername] = useState("");
   const languages = [
     { label: "JavaScript", value: "javascript" },
     { label: "Python", value: "python" },
@@ -34,6 +36,8 @@ function QuestionPage() {
     { label: "C++", value: "c++" },
     { label: "Ruby", value: "ruby" },
   ];
+
+  const router = useRouter();
 
   const getDifficultyStyle = (difficulty) => {
     switch (difficulty.toLowerCase()) {
@@ -56,6 +60,13 @@ function QuestionPage() {
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
+    const cookieUsername = Cookies.get('username');
+    if (cookieUsername) {
+      setUsername(cookieUsername);
+    }
+  }, []);
+  
+  useEffect(() => {
     if (!name) return;
 
     const fetchQuestion = async () => {
@@ -67,6 +78,8 @@ function QuestionPage() {
 
         const data = await response.json();
         setQuestion(data.question);
+        
+        
       } catch (error) {
         setError(error.message);
       }
@@ -75,6 +88,29 @@ function QuestionPage() {
     fetchQuestion();
   }, [name]);
 
+  useEffect(() => {
+    const loadSavedCode = async () => {
+      try {
+        const response = await fetch(`/api/getUserCode?username=${username}&questionId=${question._id}`, {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          console.log(response)
+          throw new Error(`Error loading saved code: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCode(data.code);
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    
+  
+    if (question && username) {
+      loadSavedCode();
+    }
+  }, [question, username]);
+  
   const runCode = async () => {
     try {
       const response = await fetch("/api/runCode", {
@@ -113,6 +149,55 @@ function QuestionPage() {
       setOutput("Error running code: " + error.message);
     }
   };
+
+  const submitCode = async () => {
+    try {
+      // Run the code first to check test cases
+      const runResponse = await fetch("/api/runCode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: question.testCase,
+        }),
+      });
+  
+      const runData = await runResponse.json();
+  
+      // Check if all test cases passed
+      const isCompleted = runData.results.every((result) => result.passed);
+  
+      // Submit the code along with the completion status
+      const response = await fetch("/api/saveCode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code,
+          questionId: question._id,
+          username,
+          isCompleted,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        router.push("/question")
+      } else {
+        alert("Failed to submit code.");
+      }
+    } catch (error) {
+      console.error("Error submitting code:", error);
+    }
+  };
+  
+  
+  
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -271,9 +356,9 @@ function QuestionPage() {
               <Button
                 variant="contained"
                 sx={{
-                  bgcolor: "#4CAF50", // Green background for Run Code button
+                  bgcolor: "#2e45bb", // Blue background for Run Code button
                   color: "text.primary",
-                  ":hover": { bgcolor: "#45a049" }, // Darker green on hover
+                  ":hover": { bgcolor: "#1b2a78" }, // Darker blue on hover
                   borderRadius: "6px",
                   padding: "8px 16px",
                   fontSize: '0.75rem',
@@ -281,6 +366,20 @@ function QuestionPage() {
                 onClick={runCode}
               >
                 Run Code
+              </Button>
+              <Button
+                variant="contained"
+                sx={{
+                  bgcolor: "#4CAF50", // Green background for Submit Code button
+                  color: "text.primary",
+                  ":hover": { bgcolor: "#45a049" }, // Darker green on hover
+                  borderRadius: "6px",
+                  padding: "8px 16px",
+                  fontSize: '0.75rem',
+                }}
+                onClick={submitCode}
+              >
+                Submit Code
               </Button>
             </Box>
             <Box
