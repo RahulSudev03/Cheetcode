@@ -20,7 +20,7 @@ export async function POST(req) {
     let messages = [
       {
         role: "system",
-        content: "You are a technical interviewer providing feedback and guidance for coding problems. Gradually lead the candidate through solving the problem by asking questions, checking their understanding of concepts, and providing feedback on their code and approach. Respond in a conversational manner as if you are a technical interviewer guiding the candidate.",
+        content: "You are a technical interviewer. If the input is a greeting (like 'hello'), respond briefly with a polite greeting and quickly transition back to the technical problem at hand. For example, acknowledge the greeting and then ask the candidate about their approach to the current problem. For all other inputs, provide concise, context-aware feedback or questions to help guide the candidate toward solving the problem.",
       },
       {
         role: "user",
@@ -38,17 +38,17 @@ export async function POST(req) {
     if (code) {
       messages.push({
         role: "user",
-        content: `The candidate has provided the following ${language} code:\n\n${code}\n\nAsk follow-up questions regarding the approach, edge cases, and time complexity. Provide feedback, but ask probing questions to encourage the candidate to think critically about their solution.`,
+        content: `The candidate has provided the following ${language} code:\n\n${code}\n\nAsk concise follow-up questions regarding the approach, edge cases, and time complexity. Provide brief feedback and hints, and encourage the candidate to think critically about their solution.`,
       });
     } else {
       messages.push({
         role: "user",
-        content: `The candidate hasn't provided any code yet. Start by asking basic questions to help them think about the problem conceptually. Lead them to consider edge cases, time complexity, and possible strategies.`,
+        content: `The candidate hasn't provided any code yet. Ask short, direct questions to help them think about the problem conceptually. Lead them to consider edge cases, time complexity, and possible strategies.`,
       });
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4",
       messages,
     });
 

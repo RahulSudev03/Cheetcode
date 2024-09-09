@@ -215,7 +215,7 @@ function QuestionList() {
                         textAlign: 'left',
                       }}
                     >
-                      <Link href={`/question/${question.name.toLowerCase().replace(/\s+/g, '-')}`} passHref>
+                      <Link href={`/practice/${question.name.toLowerCase().replace(/\s+/g, '-')}`} passHref>
                         <Typography
                           variant="h6"
                           component="a"

@@ -20,6 +20,7 @@ import ThemeProviderWrapper from "../../ThemeProviderWrapper"; // Adjust the pat
 import withAuth from "@/app/utils/hoc/withAuth";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import ResponsiveAppBar from "@/app/utils/ResponsiveAppBar";
 
 function QuestionPage() {
   const [question, setQuestion] = useState(null);
@@ -244,7 +245,9 @@ function QuestionPage() {
 
   return (
     <ThemeProviderWrapper>
+      <ResponsiveAppBar />
       <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary", padding: 2 }}>
+      
         <Grid container spacing={2} sx={{ height: "100vh" }}>
           {/* Left side for question and test cases */}
           <Grid
