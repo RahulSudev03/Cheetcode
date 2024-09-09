@@ -5,16 +5,16 @@ import User from '@/app/models/User';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Route segment config - configure bodyParser and runtime
-export const dynamic = 'force-dynamic'; // optional, based on your use case
-export const runtime = 'nodejs';        // Ensure it's run on Node.js
-export const bodyParser = false;        // Disable body parsing for Stripe
+// Stripe webhook config
+export const dynamic = 'force-dynamic'; // optional
+export const runtime = 'nodejs';
+export const bodyParser = false; // Disable body parsing for Stripe
 
 export async function POST(req, res) {
   let event;
 
   try {
-    // Retrieve the raw body
+    // Retrieve the raw body for Stripe signature verification
     const rawBody = await buffer(req);
     const signature = req.headers['stripe-signature'];
 
@@ -25,41 +25,49 @@ export async function POST(req, res) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
 
-    // Log the event for debugging
-    console.log("Stripe Event: ", event);
+    // Log the event type for debugging
+    console.log(`Stripe Event Received: ${event.type}`);
   } catch (err) {
-    console.error(`Webhook signature verification failed: ${err.message}`);
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    console.error(`⚠️  Webhook signature verification failed: ${err.message}`);
+    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
   // Handle the 'checkout.session.completed' event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    // Retrieve userId from the session's metadata
-    const userId = session.metadata?.userId;
+    // Retrieve email from metadata
+    const email = session.metadata?.email;
+    
+    if (!email) {
+      console.error('Email not found in session metadata.');
+      return res.status(400).json({ error: 'Email is missing in session metadata' });
+    }
 
-    if (userId) {
-      try {
-        await dbConnect(); // Connect to the database
+    try {
+      // Connect to the database
+      await dbConnect();
 
-        // Find the user and update their subscription status
-        await User.findByIdAndUpdate(userId, { isSubscribed: true });
-        console.log(`User ${userId} subscription status updated to true.`);
-      } catch (err) {
-        console.error('Error updating user subscription status:', err);
-        return new Response(`Database Error: ${err.message}`, { status: 500 });
+      // Find the user by email and update their subscription status
+      const updatedUser = await User.findOneAndUpdate({ email }, { isSubscribed: true }, { new: true });
+
+      if (updatedUser) {
+        console.log(`✅ User with email ${email} subscription status updated to true.`);
+        return res.status(200).json({ received: true });
+      } else {
+        console.error(`❌ No user found with email ${email}`);
+        return res.status(404).json({ error: 'User not found' });
       }
-    } else {
-      console.error('User ID not found in session metadata.');
-      return new Response('User ID missing in session metadata', { status: 400 });
+    } catch (err) {
+      console.error('Error updating user subscription status:', err);
+      return res.status(500).json({ error: `Database Error: ${err.message}` });
     }
   } else {
     console.log(`Unhandled event type ${event.type}`);
+    return res.status(200).json({ received: true });
   }
-
-  return new Response(JSON.stringify({ received: true }), { status: 200 });
 }
+
 
 
 

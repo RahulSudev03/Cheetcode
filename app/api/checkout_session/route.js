@@ -25,7 +25,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { userId } = req.body;
+  const { email } = req.body;
   try {
     const origin = req.headers.get("origin");
     const params = {
@@ -48,7 +48,7 @@ export async function POST(req) {
         },
       ],
       metadata: {
-        userId: userId,
+        email: email,
       },
       success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: "http://localhost:3000",
