@@ -1,3 +1,4 @@
+import { metadata } from "@/app/layout";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -24,6 +25,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  const { userId } = req.body;
   try {
     const origin = req.headers.get("origin");
     const params = {
@@ -45,6 +47,9 @@ export async function POST(req) {
           quantity: 1,
         },
       ],
+      metadata: {
+        userId: userId,
+      },
       success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: "http://localhost:3000",
     };
