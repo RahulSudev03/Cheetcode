@@ -8,9 +8,19 @@ import ToggleDarkMode from "./utils/ToggleDarkMode";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import getStripe from "./utils/getStripe";
+import Cookies from 'js-cookie';
+import { useRouter } from "next/navigation";
 
 export default function Main() {
+  const router = useRouter();
+
   const handleSubmit = async () => {
+    const token = Cookies.get("token");
+    if(!token) {
+      router.push("/signin");
+      return;
+    }
+
     const checkoutSession = await fetch("/api/checkout_session", {
       method: "POST",
       headers: {

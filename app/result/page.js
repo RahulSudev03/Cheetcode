@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Box, CircularProgress, Container, Typography, Button } from "@mui/material";
+import withAuth from "../utils/hoc/withAuth";
 
 const ResultPageContent = () => {
   const router = useRouter();
@@ -95,4 +96,4 @@ const ResultPage = () => {
   );
 };
 
-export default ResultPage;
+export default withAuth(ResultPage);
