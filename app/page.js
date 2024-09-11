@@ -13,42 +13,91 @@ import { useRouter } from "next/navigation";
 import jwtDecode from 'jwt-decode';
 
 export default function Main() {
-  const router = useRouter();
 
   const handleSubmit = async () => {
     const token = Cookies.get("token");
-    if(!token) {
+    const router = useRouter();
+  
+    if (!token) {
       router.push("/signin");
       return;
     }
-    const decodedToken = jwtDecode(token);
-    const email = decodedToken.email;
-
-    const checkoutSession = await fetch("/api/checkout_session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, 
-        "origin": window.location.origin,
-      },
-      body: JSON.stringify({email}),
-    });
-
-    const checkoutSessionJson = await checkoutSession.json();
-    if (checkoutSession.statusCode === 500) {
-      console.error(checkoutSession.message);
-      return;
-    }
-
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      sessionId: checkoutSessionJson.id,
-    });
-
-    if (error) {
-      console.warn(error.message);
+  
+    try {
+      const decodedToken = jwtDecode(token);
+      console.log(decodedToken);
+      const email = decodedToken.email;
+  
+      if (!email) {
+        console.error("Email not found in the token.");
+        return;
+      }
+  
+      const checkoutSession = await fetch("/api/checkout_session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${token}`, 
+          "origin": window.location.origin,
+        },
+        body: JSON.stringify({ email }), 
+      });
+  
+      if (!checkoutSession.ok) {
+        console.error("Failed to create checkout session");
+        return;
+      }
+  
+      const checkoutSessionJson = await checkoutSession.json();
+  
+      const stripe = await getStripe();
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: checkoutSessionJson.id, 
+      });
+  
+      if (error) {
+        console.warn("Stripe redirection error:", error.message);
+      }
+    } catch (error) {
+      console.error("Error during checkout:", error);
     }
   };
+  // const router = useRouter();
+
+  // const handleSubmit = async () => {
+  //   const token = Cookies.get("token");
+  //   if(!token) {
+  //     router.push("/signin");
+  //     return;
+  //   }
+  //   const decodedToken = jwtDecode(token);
+  //   const email = decodedToken.email;
+
+  //   const checkoutSession = await fetch("/api/checkout_session", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${token}`, 
+  //       "origin": window.location.origin,
+  //     },
+  //     body: JSON.stringify({email}),
+  //   });
+
+  //   const checkoutSessionJson = await checkoutSession.json();
+  //   if (checkoutSession.statusCode === 500) {
+  //     console.error(checkoutSession.message);
+  //     return;
+  //   }
+
+  //   const stripe = await getStripe();
+  //   const { error } = await stripe.redirectToCheckout({
+  //     sessionId: checkoutSessionJson.id,
+  //   });
+
+  //   if (error) {
+  //     console.warn(error.message);
+  //   }
+  // };
 
   const controls = useAnimation();
   const [headerRef, headerInView] = useInView({
