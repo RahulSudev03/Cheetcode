@@ -10,6 +10,7 @@ import { useInView } from "react-intersection-observer";
 import getStripe from "./utils/getStripe";
 import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
+import jwtDecode from 'jwt-decode';
 
 export default function Main() {
   const router = useRouter();
@@ -20,12 +21,17 @@ export default function Main() {
       router.push("/signin");
       return;
     }
+    const decodedToken = jwtDecode(token);
+    const email = decodedToken.email;
 
     const checkoutSession = await fetch("/api/checkout_session", {
       method: "POST",
       headers: {
-        origin: "http://localhost:3000",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, 
+        "origin": window.location.origin,
       },
+      body: JSON.stringify({email}),
     });
 
     const checkoutSessionJson = await checkoutSession.json();
