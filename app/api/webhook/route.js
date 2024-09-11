@@ -2,16 +2,14 @@ import { buffer } from 'micro';
 import Stripe from 'stripe';
 import dbConnect from '@/app/utils/dbConnect';
 import User from '@/app/models/User';
-import { NextResponse } from 'next/server';  // For Next.js responses
+import { NextResponse } from 'next/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Stripe webhook config
-export const config = {
-  api: {
-    bodyParser: false, 
-  },
-};
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const preferredRegion = 'auto';
+export const bodyParser = false;  
 
 export async function POST(req) {
   let event;
@@ -28,7 +26,6 @@ export async function POST(req) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
 
-    // Log the event type for debugging
     console.log(`Stripe Event Received: ${event.type}`);
   } catch (err) {
     console.error(`⚠️ Webhook signature verification failed: ${err.message}`);
@@ -38,8 +35,6 @@ export async function POST(req) {
   // Handle 'checkout.session.completed' event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-
-    // Retrieve email from metadata
     const email = session.metadata?.email;
 
     if (!email) {
@@ -48,10 +43,7 @@ export async function POST(req) {
     }
 
     try {
-      // Connect to the database
       await dbConnect();
-
-      // Find the user by email and update their subscription status
       const updatedUser = await User.findOneAndUpdate(
         { email }, 
         { isSubscribed: true }, 
