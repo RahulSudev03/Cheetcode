@@ -2,15 +2,18 @@ import { buffer } from 'micro';
 import Stripe from 'stripe';
 import dbConnect from '@/app/utils/dbConnect';
 import User from '@/app/models/User';
+import { NextResponse } from 'next/server';  // For Next.js responses
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Stripe webhook config
-export const dynamic = 'force-dynamic';  // optional
-export const runtime = 'nodejs';         // Ensure it's run on Node.js
-export const bodyParser = false;         // Disable body parsing for Stripe
+export const config = {
+  api: {
+    bodyParser: false, 
+  },
+};
 
-export async function POST(req, res) {
+export async function POST(req) {
   let event;
 
   try {
@@ -29,7 +32,7 @@ export async function POST(req, res) {
     console.log(`Stripe Event Received: ${event.type}`);
   } catch (err) {
     console.error(`⚠️ Webhook signature verification failed: ${err.message}`);
-    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
   // Handle 'checkout.session.completed' event
@@ -41,7 +44,7 @@ export async function POST(req, res) {
 
     if (!email) {
       console.error('Email not found in session metadata.');
-      return res.status(400).json({ error: 'Email is missing in session metadata' });
+      return NextResponse.json({ error: 'Email is missing in session metadata' }, { status: 400 });
     }
 
     try {
@@ -57,17 +60,17 @@ export async function POST(req, res) {
 
       if (updatedUser) {
         console.log(`✅ User with email ${email} subscription status updated to true.`);
-        return res.status(200).json({ received: true });
+        return NextResponse.json({ received: true }, { status: 200 });
       } else {
         console.error(`❌ No user found with email ${email}`);
-        return res.status(404).json({ error: 'User not found' });
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
     } catch (err) {
       console.error('Error updating user subscription status:', err);
-      return res.status(500).json({ error: `Database Error: ${err.message}` });
+      return NextResponse.json({ error: `Database Error: ${err.message}` }, { status: 500 });
     }
   } else {
     console.log(`Unhandled event type ${event.type}`);
-    return res.status(200).json({ received: true });
+    return NextResponse.json({ received: true }, { status: 200 });
   }
 }
