@@ -13,11 +13,10 @@ import { useRouter } from "next/navigation";
 import jwtDecode from 'jwt-decode';
 
 export default function Main() {
+  const router = useRouter();
 
   const handleSubmit = async () => {
     const token = Cookies.get("token");
-    const router = useRouter();
-  
     if (!token) {
       router.push("/signin");
       return;
