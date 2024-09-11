@@ -24,7 +24,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { email } = req.body;
+  const { email } = await req.json();
   try {
     const origin = req.headers.get("origin");
     const params = {
