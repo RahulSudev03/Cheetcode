@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dbConnect from '@/app/utils/dbConnect';
 import User from '@/app/models/User'; // Your user model
-import { getUserFromToken } from '@/app/utils/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET; // Ensure you have the secret in your environment variables
 
