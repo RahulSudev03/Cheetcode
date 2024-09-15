@@ -21,6 +21,7 @@ import withAuth from "@/app/utils/hoc/withAuth";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import ResponsiveAppBar from "@/app/utils/ResponsiveAppBar";
+import { Language } from "@mui/icons-material";
 
 function QuestionPage() {
   const [question, setQuestion] = useState(null);
@@ -34,7 +35,7 @@ function QuestionPage() {
     { label: "JavaScript", value: "javascript" },
     { label: "Python", value: "python" },
     { label: "Java", value: "java" },
-    { label: "C++", value: "c++" },
+    { label: "C++", value: "C++" },
   ];
 
   const router = useRouter();
@@ -104,12 +105,31 @@ function QuestionPage() {
         console.error(error.message);
       }
     };
+
+    const loadFunctionCode = async () => {
+      try {
+        const response = await fetch(`/api/getDefaultCode?questionId=${question._id}`, {
+          method:'GET', 
+        });
+        if (!response.ok) {
+          console.log(response)
+          throw new Error(`Error loading saved code: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCode(data.function);
+      
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
     
-  
+    if (question && language) {
+      loadFunctionCode();
+    }
     if (question && username) {
       loadSavedCode();
     }
-  }, [question, username]);
+  }, [question, username, language]);
   
   const runCode = async () => {
     try {
@@ -198,7 +218,22 @@ function QuestionPage() {
   
   
   
-
+  const handleRefresh = async () => {
+    try {
+      const response = await fetch(`/api/getDefaultCode?questionId=${question._id}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        console.log(response);
+        throw new Error(`Error loading saved code: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      setCode(data.function);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
   const handleMouseDown = (e) => {
     setIsDragging(true);
     e.preventDefault();
@@ -345,7 +380,10 @@ function QuestionPage() {
               <FormControl sx={{ minWidth: 100, mr: 1 }}>
                 <Select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  onChange={async (e) => {
+                    setLanguage(e.target.value);
+                    await handleRefresh();  // Ensure this fetches the correct code for the selected language
+                  }}
                   sx={{ color: "text.primary", fontSize: '0.75rem' }}
                 >
                   {languages.map((lang) => (
@@ -355,6 +393,7 @@ function QuestionPage() {
                   ))}
                 </Select>
               </FormControl>
+
               <Button
                 variant="contained"
                 sx={{
