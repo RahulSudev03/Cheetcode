@@ -44,6 +44,7 @@ export async function POST(req) {
 
     try {
       await dbConnect();
+      console.log("✅ Connected to the database");
       const updatedUser = await User.findOneAndUpdate(
         { email }, 
         { isSubscribed: true }, 
@@ -51,18 +52,18 @@ export async function POST(req) {
       );
 
       if (updatedUser) {
-        console.log(`✅ User with email ${email} subscription status updated to true.`);
-        return NextResponse.json({ received: true }, { status: 200 });
+        console.log(`✅ Subscription status for ${email} updated to true.`);
+        return NextResponse.json({ message: `Subscription updated for ${email}` }, { status: 200 });
       } else {
         console.error(`❌ No user found with email ${email}`);
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
     } catch (err) {
-      console.error('Error updating user subscription status:', err);
+      console.error(`⚠️ Error updating user subscription status: ${err.message}`);
       return NextResponse.json({ error: `Database Error: ${err.message}` }, { status: 500 });
     }
   } else {
-    console.log(`Unhandled event type ${event.type}`);
-    return NextResponse.json({ received: true }, { status: 200 });
+    console.log(`⚠️ Unhandled event type ${event.type}`);
+    return NextResponse.json({ message: 'Unhandled event type' }, { status: 400 });
   }
 }
