@@ -10,17 +10,19 @@ import { useInView } from "react-intersection-observer";
 import getStripe from "./utils/getStripe";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import jwtDecode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 export default function Main() {
   const router = useRouter();
 
   const handleSubmit = async () => {
     const token = Cookies.get("token");
+    console.log("Token from cookies:", token);
     if (!token) {
       router.push("/signin");
       return;
     }
+    console.log(token);
     const decodedToken = jwtDecode(token);
     const email = decodedToken.email;
 
