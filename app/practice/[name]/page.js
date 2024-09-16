@@ -35,7 +35,7 @@ function QuestionPage() {
     { label: "JavaScript", value: "javascript" },
     { label: "Python", value: "python" },
     { label: "Java", value: "java" },
-    { label: "C++", value: "C++" },
+    { label: "C++", value: "cpp" },
   ];
 
   const router = useRouter();
@@ -92,7 +92,7 @@ function QuestionPage() {
   useEffect(() => {
     const loadSavedCode = async () => {
       try {
-        const response = await fetch(`/api/getUserCode?username=${username}&questionId=${question._id}`, {
+        const response = await fetch(`/api/getUserCode?username=${username}&questionId=${question._id}&language=${language}`, {
           method: 'GET',
         });
         if (!response.ok) {
@@ -108,7 +108,7 @@ function QuestionPage() {
 
     const loadFunctionCode = async () => {
       try {
-        const response = await fetch(`/api/getDefaultCode?questionId=${question._id}`, {
+        const response = await fetch(`/api/getDefaultCode?questionId=${question._id}&language=${language}`, {
           method:'GET', 
         });
         if (!response.ok) {
@@ -200,6 +200,7 @@ function QuestionPage() {
           code,
           questionId: question._id,
           username,
+          language,
           isCompleted,
         }),
       });
@@ -207,7 +208,7 @@ function QuestionPage() {
       const data = await response.json();
   
       if (data.success) {
-        router.push("/question")
+        router.push("/practice")
       } else {
         alert("Failed to submit code.");
       }
@@ -220,7 +221,7 @@ function QuestionPage() {
   
   const handleRefresh = async () => {
     try {
-      const response = await fetch(`/api/getDefaultCode?questionId=${question._id}`, {
+      const response = await fetch(`/api/getDefaultCode?questionId=${question._id}&language=${language}`, {
         method: 'GET',
       });
       if (!response.ok) {

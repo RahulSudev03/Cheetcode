@@ -5,12 +5,12 @@ import User from '@/app/models/User';
 
 export async function POST(request) {
   try {
-    const { code, questionId, username, isCompleted } = await request.json();
+    const { code, questionId, username, language, isCompleted } = await request.json();
 
     await dbConnect();
 
     await SavedCode.findOneAndUpdate(
-      { username, questionId },
+      { username, questionId, language },
       { code },
       { upsert: true, new: true }
     );

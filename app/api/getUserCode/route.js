@@ -10,9 +10,10 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const username = searchParams.get('username');
   const questionId = searchParams.get('questionId');
+  const language = searchParams.get('language');
 
   try {
-    const savedCode = await SavedCode.findOne({ username, questionId });
+    const savedCode = await SavedCode.findOne({ username, questionId, language });
 
     if (!savedCode) {
       return NextResponse.json({ message: "No saved code found." }, { status: 404 });

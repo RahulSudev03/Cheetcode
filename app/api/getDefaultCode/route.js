@@ -8,11 +8,11 @@ export async function GET(req) {
   await dbConnect();
 
   const { searchParams } = new URL(req.url);
-  //const language = searchParams.get('language');
   const questionId = searchParams.get('questionId');
+  const language = searchParams.get('language');
 
   try {
-    const defaultFunction = await Functions.findOne({ questionId });
+    const defaultFunction = await Functions.findOne({ questionId, language });
 
     if (!defaultFunction) {
       return NextResponse.json({ message: "No saved code found." }, { status: 404 });
