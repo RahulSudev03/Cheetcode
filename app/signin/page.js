@@ -34,11 +34,12 @@ export default function Signin() {
       });
   
       const result = await response.json();
+      console.log(result.token);
   
       if (response.ok) {
         // Set cookies with values from the response
-        Cookies.set('token', result.token, { expires: 1, sameSite: 'None', secure: true });
-        Cookies.set('username', result.user.username, { expires: 1, sameSite: 'None', secure: true });
+        Cookies.set('token', result.token, { expires: 7, path: "/" });
+        Cookies.set('username', result.user.username, { expires: 7, sameSite: 'None', secure: true });
         setMessage(result.message);
         router.push('/');
       } else {
