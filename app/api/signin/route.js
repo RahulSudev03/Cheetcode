@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import dbConnect from '@/app/utils/dbConnect';
 import user from '@/app/models/User';
 
@@ -29,9 +30,20 @@ export async function POST(req) {
       );
     }
 
+    const token = jwt.sign(
+      { id: foundUser._id, username: foundUser.username }, // Payload data
+      process.env.JWT_SECRET, // Secret key from environment variables
+      { expiresIn: '1d' } // Token expiration (1 day in this case)
+    );
+
+
     // If credentials are valid, return a success response
     return new Response(
-      JSON.stringify({ user: { username: foundUser.username, email: foundUser.email } }),
+      JSON.stringify({
+        token, // Return the token
+        user: { username: foundUser.username, email: foundUser.email },
+        message: 'Sign in successful',
+      }),
       { status: 200 }
     );
 

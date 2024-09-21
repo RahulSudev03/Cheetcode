@@ -8,6 +8,27 @@ const formatAmountForStripe = (amount) => {
   return Math.round(amount * 100); // Convert dollars to cents
 };
 
+export async function GET(req) {
+  const searchParams = req.nextUrl.searchParams;
+  const session_id = searchParams.get("session_id");
+
+  if (!session_id) {
+    return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+  }
+
+  try {
+    const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
+    return NextResponse.json(checkoutSession);
+  } catch (error) {
+    console.error("Error retrieving checkout session:", error);
+    return NextResponse.json(
+      { error: "Error retrieving checkout session" },
+      { status: 500 }
+    );
+  }
+}
+
+
 export async function POST(req) {
   const token = req.headers.get("authorization").split(' ')[1]; // Extract token from Authorization header
 
