@@ -133,6 +133,12 @@ function QuestionPage() {
   
   const runCode = async () => {
     try {
+      let languageToUse = language;
+
+      if (language === "cpp") {
+        languageToUse = "c++"; 
+      }
+
       const response = await fetch("/api/runCode", {
         method: "POST",
         headers: {
@@ -140,7 +146,7 @@ function QuestionPage() {
         },
         body: JSON.stringify({
           code,
-          language,
+          language: languageToUse,
           testCases: question.testCase,
         }),
       });
@@ -172,7 +178,6 @@ function QuestionPage() {
 
   const submitCode = async () => {
     try {
-      // Run the code first to check test cases
       const runResponse = await fetch("/api/runCode", {
         method: "POST",
         headers: {
@@ -184,13 +189,11 @@ function QuestionPage() {
           testCases: question.testCase,
         }),
       });
-  
+
       const runData = await runResponse.json();
-  
-      // Check if all test cases passed
+
       const isCompleted = runData.results.every((result) => result.passed);
-  
-      // Submit the code along with the completion status
+
       const response = await fetch("/api/saveCode", {
         method: "POST",
         headers: {
@@ -204,11 +207,11 @@ function QuestionPage() {
           isCompleted,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
-        router.push("/practice")
+        router.push("/practice");
       } else {
         alert("Failed to submit code.");
       }
