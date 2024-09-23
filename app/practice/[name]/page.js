@@ -21,6 +21,7 @@ import withAuth from "@/app/utils/hoc/withAuth";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import ResponsiveAppBar from "@/app/utils/ResponsiveAppBar";
+import { Language } from "@mui/icons-material";
 
 function QuestionPage() {
   const [question, setQuestion] = useState(null);
@@ -34,7 +35,7 @@ function QuestionPage() {
     { label: "JavaScript", value: "javascript" },
     { label: "Python", value: "python" },
     { label: "Java", value: "java" },
-    { label: "C++", value: "c++" },
+    { label: "C++", value: "cpp" },
   ];
 
   const router = useRouter();
@@ -91,7 +92,7 @@ function QuestionPage() {
   useEffect(() => {
     const loadSavedCode = async () => {
       try {
-        const response = await fetch(`/api/getUserCode?username=${username}&questionId=${question._id}`, {
+        const response = await fetch(`/api/getUserCode?username=${username}&questionId=${question._id}&language=${language}`, {
           method: 'GET',
         });
         if (!response.ok) {
@@ -104,15 +105,40 @@ function QuestionPage() {
         console.error(error.message);
       }
     };
+
+    const loadFunctionCode = async () => {
+      try {
+        const response = await fetch(`/api/getDefaultCode?questionId=${question._id}&language=${language}`, {
+          method:'GET', 
+        });
+        if (!response.ok) {
+          console.log(response)
+          throw new Error(`Error loading saved code: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCode(data.function);
+      
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
     
-  
+    if (question && language) {
+      loadFunctionCode();
+    }
     if (question && username) {
       loadSavedCode();
     }
-  }, [question, username]);
+  }, [question, username, language]);
   
   const runCode = async () => {
     try {
+      let languageToUse = language;
+
+      if (language === "cpp") {
+        languageToUse = "c++"; 
+      }
+
       const response = await fetch("/api/runCode", {
         method: "POST",
         headers: {
@@ -120,7 +146,7 @@ function QuestionPage() {
         },
         body: JSON.stringify({
           code,
-          language,
+          language: languageToUse,
           testCases: question.testCase,
         }),
       });
@@ -152,7 +178,6 @@ function QuestionPage() {
 
   const submitCode = async () => {
     try {
-      // Run the code first to check test cases
       const runResponse = await fetch("/api/runCode", {
         method: "POST",
         headers: {
@@ -164,13 +189,11 @@ function QuestionPage() {
           testCases: question.testCase,
         }),
       });
-  
+
       const runData = await runResponse.json();
-  
-      // Check if all test cases passed
+
       const isCompleted = runData.results.every((result) => result.passed);
-  
-      // Submit the code along with the completion status
+
       const response = await fetch("/api/saveCode", {
         method: "POST",
         headers: {
@@ -180,14 +203,15 @@ function QuestionPage() {
           code,
           questionId: question._id,
           username,
+          language,
           isCompleted,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
-        router.push("/question")
+        router.push("/practice");
       } else {
         alert("Failed to submit code.");
       }
@@ -198,7 +222,22 @@ function QuestionPage() {
   
   
   
-
+  const handleRefresh = async () => {
+    try {
+      const response = await fetch(`/api/getDefaultCode?questionId=${question._id}&language=${language}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        console.log(response);
+        throw new Error(`Error loading saved code: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      setCode(data.function);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
   const handleMouseDown = (e) => {
     setIsDragging(true);
     e.preventDefault();
@@ -345,7 +384,10 @@ function QuestionPage() {
               <FormControl sx={{ minWidth: 100, mr: 1 }}>
                 <Select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  onChange={async (e) => {
+                    setLanguage(e.target.value);
+                    await handleRefresh();  // Ensure this fetches the correct code for the selected language
+                  }}
                   sx={{ color: "text.primary", fontSize: '0.75rem' }}
                 >
                   {languages.map((lang) => (
@@ -355,6 +397,7 @@ function QuestionPage() {
                   ))}
                 </Select>
               </FormControl>
+
               <Button
                 variant="contained"
                 sx={{
